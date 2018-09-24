@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Entity
 @Table(name = "statistics")
@@ -17,8 +18,10 @@ public class StatisticalUnit {
     @OneToMany
     @JoinColumn(name = "camera_id")
     private Camera camera;
-    @OneToOne
+    @OneToMany
     @JoinColumn(name = "zone_id")
     private WorkspaceZone zone;
     private boolean busy;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date date;
 }
