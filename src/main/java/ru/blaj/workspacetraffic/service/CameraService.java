@@ -10,13 +10,15 @@ import ru.blaj.workspacetraffic.util.ImageUtil;
 
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
 
 /**
- * Класс - сервис необходим для манипуляции объектами класса Camera( @{@link Camera} )
+ * Класс - сервис необходим для манипуляции объектами класса Camera( @see{@link Camera} )
+ *
  * @author Alesandr Kovalev aka blajimir
- * */
+ */
 
 @Service
 @Log
@@ -24,43 +26,43 @@ public class CameraService {
     private CameraRepository cameraRepository;
 
     @Autowired
-    public CameraService(CameraRepository cameraRepository){
+    public CameraService(CameraRepository cameraRepository) {
         this.cameraRepository = cameraRepository;
     }
 
-    public List<Camera> getAllCameras(){
-        return  cameraRepository.findAll();
+    public Collection<Camera> getAllCameras() {
+        return Collections.unmodifiableCollection(cameraRepository.findAll());
     }
 
-    public Camera addCamera(@NotNull Camera camera){
-        if(camera.getId()!=null){
+    public Camera addCamera(@NotNull Camera camera) {
+        if (camera.getId() != null) {
             camera.setId(null);
         }
         return this.cameraRepository.save(camera);
     }
 
-    public Camera getCamera(@NotNull Long id){
-        return Optional.ofNullable(id).filter(aLong -> aLong!=0)
+    public Camera getCamera(@NotNull Long id) {
+        return Optional.ofNullable(id).filter(aLong -> aLong != 0)
                 .map(aLong -> this.cameraRepository.findById(aLong).orElse(null)).orElse(null);
     }
 
-    public Camera saveCamera(@NotNull Camera camera){
+    public Camera saveCamera(@NotNull Camera camera) {
         return Optional.of(camera)
-                .filter(cam -> cam.getId()!=null && cam.getId()!=0)
+                .filter(cam -> cam.getId() != null && cam.getId() != 0)
                 .filter(cam -> !StringUtils.isEmpty(cam.getUrl()))
                 .map(cam -> this.cameraRepository.save(cam))
                 .orElse(null);
     }
 
-    public void deleteCamera(@NotNull Camera camera){
+    public void deleteCamera(@NotNull Camera camera) {
         this.cameraRepository.delete(camera);
     }
 
-    public boolean isCameraAvailable(@NotNull Camera camera){
+    public boolean isCameraAvailable(@NotNull Camera camera) {
         boolean result = false;
-        if(!StringUtils.isEmpty(camera.getUrl())){
+        if (!StringUtils.isEmpty(camera.getUrl())) {
             try {
-                if(ImageUtil.getImageFromVideo(camera.getUrl(), null)!=null){
+                if (ImageUtil.getImageFromVideo(camera.getUrl(), null) != null) {
                     result = true;
                 }
             } catch (IOException e) {

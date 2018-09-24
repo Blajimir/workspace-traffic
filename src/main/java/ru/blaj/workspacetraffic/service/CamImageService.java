@@ -6,6 +6,8 @@ import ru.blaj.workspacetraffic.model.CamImage;
 import ru.blaj.workspacetraffic.repository.CamImageRepository;
 
 import javax.validation.constraints.NotNull;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
 
 @Service
@@ -34,6 +36,10 @@ public class CamImageService {
         return Optional.of(id).filter(aLong -> aLong != 0)
                 .map(aLong -> this.camImageRepository.findById(aLong).orElse(null))
                 .orElse(null);
+    }
+
+    public Collection<CamImage> getAllCamImage(){
+        return Collections.unmodifiableCollection(this.camImageRepository.findAll());
     }
 
     public void deleteCamImage(@NotNull CamImage camImage) {
