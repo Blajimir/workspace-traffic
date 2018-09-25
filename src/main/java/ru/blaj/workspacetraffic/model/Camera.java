@@ -1,5 +1,7 @@
 package ru.blaj.workspacetraffic.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -21,6 +23,8 @@ public class Camera {
     @SequenceGenerator(name="camera_seq", sequenceName = "camera_id_seq", allocationSize = 1)
     private Long id;
     private String url;
+    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @OneToMany
     @JoinColumn(name = "camera_id")
     private List<WorkspaceZone> zones;

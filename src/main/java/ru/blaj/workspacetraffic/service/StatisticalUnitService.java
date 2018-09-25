@@ -1,6 +1,7 @@
 package ru.blaj.workspacetraffic.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.blaj.workspacetraffic.model.Camera;
 import ru.blaj.workspacetraffic.model.StatisticalUnit;
@@ -8,6 +9,8 @@ import ru.blaj.workspacetraffic.model.WorkspaceZone;
 import ru.blaj.workspacetraffic.repository.StatisticalUnitRepository;
 
 import javax.validation.constraints.NotNull;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
@@ -15,7 +18,13 @@ import java.util.Optional;
 @Service
 public class StatisticalUnitService {
 
+    @Autowired
     private StatisticalUnitRepository statisticalUnitRepository;
+    @Autowired
+    private CameraService cameraService;
+
+    @Value("${app.with-cam-image}")
+    private boolean isWithCamImage;
 
     @Autowired
     public StatisticalUnitService(StatisticalUnitRepository statisticalUnitRepository) {
@@ -66,6 +75,20 @@ public class StatisticalUnitService {
         }
         return this.statisticalUnitRepository.save(unit);
     }
-
-
+    /**
+     * Эта функция опрашивает камеру и при наличии изображения, отправляет его в когнитивный сервис custom vision
+     * после получения результатов от когнетивного сервиса он сохраняет полученные результаты в БД как объекты
+     * StatisticalUnit {@link StatisticalUnit}
+     *
+     * @param camera - объект класса {@link Camera}, объект не должен быть {@literal null}
+     * @return возвращает статистику по полученных от когнетивного сервиса в сиде коллекции объектов {@link StatisticalUnit}
+     */
+    public Collection<StatisticalUnit> saveUnitFromCamera(@NotNull Camera camera){
+        Collection<StatisticalUnit> result = Collections.emptyList();
+        BufferedImage bi = cameraService.getImageFromCamera(camera);
+        if(bi!=null){
+            bi.
+        }
+        return result;
+    }
 }

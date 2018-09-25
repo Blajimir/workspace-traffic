@@ -52,4 +52,14 @@ public class TrafficTest {
         huc.disconnect();
     }
 
+    @Test
+    public void testConnection() throws IOException {
+        //String surl = STREAM_URL_CAM;
+        String surl = "http://124.0.0.3";
+        URL url = new URL(surl);
+        HttpURLConnection huc = (HttpURLConnection) url.openConnection();
+        System.out.println(huc.getConnectTimeout());
+        //System.out.println(huc.getResponseMessage());
+    }
+
 }
