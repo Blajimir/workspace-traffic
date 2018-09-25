@@ -17,9 +17,8 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Base64;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
 
 @Log
 public class ImageUtil {
@@ -84,29 +83,68 @@ public class ImageUtil {
     }
 
     //TODO: допилить функцию склейки зон изображений в одно изображение
-    public static BufferedImage generateUnionImage(BufferedImage source, List<Zone> zones, int offset, int maxCol){
-        int height = offset;
-        int rowHeight = 0;
-        int width = offset;
+    public static BufferedImage generateUnionImage(BufferedImage source, List<Zone> zones, int offset, int maxCol) {
+        BufferedImage result = null;
+        int fullHeight = offset;
+        int fullWidth = 0;
+        int height = 0;
+        int width = 0;
+        boolean full = false;
         int col = 0;
-        for(Zone zone:zones){
-            height = Math.max(height, relativeToAbsolute(zone.getHeight(),source.getHeight())+offset);
-            width = Math.max(width, relativeToAbsolute(zone.getWidth(),source.getWidth())+offset);
-            if(col==maxCol){
+        List<Zone> newZones = new ArrayList<>();
+        for (Zone zone : zones) {
+            col++;
+            full = false;
+            //TODO: заменить зоны с относительными координатами на зоны с абсолютными координатами!!!
+            newZones.add(absoluteValuesToZone(width, fullHeight,
+                    relativeToAbsolute(zone.getWidth(), source.getWidth()),
+                    relativeToAbsolute(zone.getHeight(), source.getHeight()),
+                    source.getWidth(), source.getHeight()));
+            height = Math.max(height, relativeToAbsolute(zone.getHeight(), source.getHeight()) + offset);
+            width += relativeToAbsolute(zone.getWidth(), source.getWidth()) + offset;
+            if (col == maxCol) {
                 col = 0;
-                rowHeight+=height;
-            }else{
-                col++;
+                width = offset;
+                fullWidth = Math.max(fullWidth, width);
+                fullHeight += height;
+                full = true;
             }
         }
-        return null;
+        if (!full) {
+            fullWidth = Math.max(fullWidth, width);
+            fullHeight += height;
+        }
+
+        result = new BufferedImage(fullWidth, fullHeight, source.getType());
+        Graphics2D g = (Graphics2D) result.getGraphics();
+
+        /*g.drawImage(source,
+                );*/
+        return result;
     }
 
-    public static float absoluteToRelative(int aValue, int length){
-        return 1.0f/(float)length*(float)aValue;
+    public static Zone absoluteValuesToZone(int zl, int zt, int zw, int zh, int w, int h) {
+        return new Zone()
+                .withLeft(absoluteToRelative(zl, w))
+                .withTop(absoluteToRelative(zt, h))
+                .withWidth(absoluteToRelative(zw, w))
+                .withHeight(absoluteToRelative(zh, h));
     }
 
-    public static int relativeToAbsolute(float rValue, int length){
-        return (int)(rValue*length);
+    public static List<Integer> zoneToAbsoluteValues(Zone zone, int w, int h) {
+        List<Integer> coords = new ArrayList<>();
+        coords.add(relativeToAbsolute(zone.getLeft(),w));
+        coords.add(relativeToAbsolute(zone.getTop(),h));
+        coords.add(relativeToAbsolute(zone.getWidth(),w));
+        coords.add(relativeToAbsolute(zone.getHeight(),h));
+        return  coords;
+    }
+
+    public static float absoluteToRelative(int aValue, int length) {
+        return 1.0f / (float) length * (float) aValue;
+    }
+
+    public static int relativeToAbsolute(float rValue, int length) {
+        return (int) (rValue * length);
     }
 }

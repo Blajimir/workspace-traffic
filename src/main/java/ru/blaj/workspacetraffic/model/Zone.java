@@ -18,4 +18,24 @@ public class Zone {
     protected Float width;
     @Column(precision = 10, scale = 2)
     protected Float height;
+
+    public Zone withLeft(float left){
+        this.left = left;
+        return this;
+    }
+
+    public Zone withTop(float top){
+        this.top = top;
+        return this;
+    }
+
+    public Zone withWidth(float width){
+        this.width = width;
+        return this;
+    }
+
+    public Zone withHeight(float height){
+        this.height = height;
+        return this;
+    }
 }

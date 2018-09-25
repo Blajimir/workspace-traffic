@@ -87,7 +87,7 @@ public class StatisticalUnitService {
         Collection<StatisticalUnit> result = Collections.emptyList();
         BufferedImage bi = cameraService.getImageFromCamera(camera);
         if(bi!=null){
-            bi.
+           // bi.
         }
         return result;
     }
