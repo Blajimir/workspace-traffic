@@ -2,6 +2,7 @@ package ru.blaj.workspacetraffic.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.blaj.workspacetraffic.util.ImageUtil;
 
 @Data
 @NoArgsConstructor

@@ -5,7 +5,8 @@ import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
 import org.springframework.util.StringUtils;
-import ru.blaj.workspacetraffic.model.CamImage;
+import ru.blaj.workspacetraffic.model.AbsoluteZone;
+import ru.blaj.workspacetraffic.model.MiddleStructure;
 import ru.blaj.workspacetraffic.model.Zone;
 
 import javax.imageio.ImageIO;
@@ -15,10 +16,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Log
 public class ImageUtil {
@@ -83,25 +86,24 @@ public class ImageUtil {
     }
 
     //TODO: допилить функцию склейки зон изображений в одно изображение
-    public static BufferedImage generateUnionImage(BufferedImage source, List<Zone> zones, int offset, int maxCol) {
-        BufferedImage result = null;
+    public static MiddleStructure generateUnionImage(BufferedImage source, List<Zone> zones, int offset, int maxCol) {
+        MiddleStructure result = null;
+        BufferedImage dest = null;
         int fullHeight = offset;
         int fullWidth = 0;
         int height = 0;
         int width = 0;
         boolean full = false;
         int col = 0;
-        List<Zone> newZones = new ArrayList<>();
-        for (Zone zone : zones) {
+        List<AbsoluteZone> oldZones = fromZones(zones, source.getWidth(), source.getHeight());
+        List<AbsoluteZone> newZones = new ArrayList<>();
+        for (AbsoluteZone zone : oldZones) {
             col++;
             full = false;
-            //TODO: заменить зоны с относительными координатами на зоны с абсолютными координатами!!!
-            newZones.add(absoluteValuesToZone(width, fullHeight,
-                    relativeToAbsolute(zone.getWidth(), source.getWidth()),
-                    relativeToAbsolute(zone.getHeight(), source.getHeight()),
-                    source.getWidth(), source.getHeight()));
-            height = Math.max(height, relativeToAbsolute(zone.getHeight(), source.getHeight()) + offset);
-            width += relativeToAbsolute(zone.getWidth(), source.getWidth()) + offset;
+            newZones.add(new AbsoluteZone().withLeft(width).withTop(fullHeight)
+                    .withWidth(zone.getWidth()).withHeight(zone.getHeight()));
+            height = Math.max(height, zone.getHeight() + offset);
+            width += zone.getWidth() + offset;
             if (col == maxCol) {
                 col = 0;
                 width = offset;
@@ -115,29 +117,23 @@ public class ImageUtil {
             fullHeight += height;
         }
 
-        result = new BufferedImage(fullWidth, fullHeight, source.getType());
-        Graphics2D g = (Graphics2D) result.getGraphics();
+        dest = new BufferedImage(fullWidth+offset, fullHeight+offset, source.getType());
+        Graphics2D g = (Graphics2D) dest.getGraphics();
+        g.setColor(Color.BLACK);
+        g.fillRect(0, 0, dest.getWidth(), dest.getHeight());
 
-        /*g.drawImage(source,
-                );*/
+        for (AbsoluteZone zone : newZones) {
+            AbsoluteZone oldZone = oldZones.get(newZones.indexOf(zone));
+            g.drawImage(source,
+                    zone.getLeft(), zone.getTop(),
+                    zone.getLeft() + zone.getWidth(),zone.getTop() + zone.getHeight(),
+                    oldZone.getLeft(), oldZone.getTop(),
+                    oldZone.getLeft() + oldZone.getWidth(), oldZone.getTop() + oldZone.getHeight(),
+                    null);
+        }
+
+        result = new MiddleStructure(source, dest, oldZones, newZones);
         return result;
-    }
-
-    public static Zone absoluteValuesToZone(int zl, int zt, int zw, int zh, int w, int h) {
-        return new Zone()
-                .withLeft(absoluteToRelative(zl, w))
-                .withTop(absoluteToRelative(zt, h))
-                .withWidth(absoluteToRelative(zw, w))
-                .withHeight(absoluteToRelative(zh, h));
-    }
-
-    public static List<Integer> zoneToAbsoluteValues(Zone zone, int w, int h) {
-        List<Integer> coords = new ArrayList<>();
-        coords.add(relativeToAbsolute(zone.getLeft(),w));
-        coords.add(relativeToAbsolute(zone.getTop(),h));
-        coords.add(relativeToAbsolute(zone.getWidth(),w));
-        coords.add(relativeToAbsolute(zone.getHeight(),h));
-        return  coords;
     }
 
     public static float absoluteToRelative(int aValue, int length) {
@@ -147,4 +143,33 @@ public class ImageUtil {
     public static int relativeToAbsolute(float rValue, int length) {
         return (int) (rValue * length);
     }
+
+    public static Zone fromAbsoluteZone(AbsoluteZone zone, int width, int height) {
+        return new Zone()
+                .withLeft(ImageUtil.absoluteToRelative(zone.getLeft(), width))
+                .withTop(ImageUtil.absoluteToRelative(zone.getTop(), height))
+                .withWidth(ImageUtil.absoluteToRelative(zone.getWidth(), width))
+                .withHeight(ImageUtil.absoluteToRelative(zone.getHeight(), height));
+    }
+
+    public static AbsoluteZone fromZone(Zone zone, int width, int height) {
+        return new AbsoluteZone()
+                .withLeft(ImageUtil.relativeToAbsolute(zone.getLeft(), width))
+                .withTop(ImageUtil.relativeToAbsolute(zone.getTop(), height))
+                .withWidth(ImageUtil.relativeToAbsolute(zone.getWidth(), width))
+                .withHeight(ImageUtil.relativeToAbsolute(zone.getHeight(), height));
+    }
+
+    public static List<AbsoluteZone> fromZones(List<Zone> zones, int width, int height) {
+        return zones.stream()
+                .map(zone -> fromZone(zone, width, height))
+                .collect(Collectors.toList());
+    }
+
+    public static List<Zone> fromAbsoluteZones(List<AbsoluteZone> zones, int width, int height) {
+        return zones.stream()
+                .map(zone -> fromAbsoluteZone(zone, width, height))
+                .collect(Collectors.toList());
+    }
+
 }

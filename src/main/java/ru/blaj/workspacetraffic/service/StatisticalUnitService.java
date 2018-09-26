@@ -3,17 +3,18 @@ package ru.blaj.workspacetraffic.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import ru.blaj.workspacetraffic.model.Camera;
-import ru.blaj.workspacetraffic.model.StatisticalUnit;
-import ru.blaj.workspacetraffic.model.WorkspaceZone;
+import ru.blaj.workspacetraffic.model.*;
 import ru.blaj.workspacetraffic.repository.StatisticalUnitRepository;
+import ru.blaj.workspacetraffic.util.ImageUtil;
 
 import javax.validation.constraints.NotNull;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class StatisticalUnitService {
@@ -87,8 +88,12 @@ public class StatisticalUnitService {
         Collection<StatisticalUnit> result = Collections.emptyList();
         BufferedImage bi = cameraService.getImageFromCamera(camera);
         if(bi!=null){
-           // bi.
+            ImageUtil.generateUnionImage(bi, toZones(camera.getZones()),5, 4);
         }
         return result;
+    }
+
+    private List<Zone> toZones(List<WorkspaceZone> zones){
+        return zones.stream().map(zone -> (Zone)zone).collect(Collectors.toList());
     }
 }

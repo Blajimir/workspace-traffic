@@ -2,6 +2,7 @@ package ru.blaj.workspacetraffic.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.blaj.workspacetraffic.util.ImageUtil;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
@@ -38,4 +39,5 @@ public class Zone {
         this.height = height;
         return this;
     }
+
 }
