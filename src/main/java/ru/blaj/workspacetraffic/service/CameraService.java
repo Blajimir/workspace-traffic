@@ -46,10 +46,10 @@ public class CameraService {
             if(Optional.ofNullable(camera.getZones()).orElseGet(Collections::emptyList).isEmpty()){
                 WorkspaceZone zone = new WorkspaceZone();
                 zone.setName("zone0");
-                zone.setTop(0f);
-                zone.setLeft(0f);
-                zone.setHeight(1.0f);
-                zone.setWidth(1.0f);
+                zone.setTop(0.0);
+                zone.setLeft(0.0);
+                zone.setHeight(1.0);
+                zone.setWidth(1.0);
                 camera.setZones(Collections.singletonList(zone));
             }
             result = this.cameraRepository.save(camera);

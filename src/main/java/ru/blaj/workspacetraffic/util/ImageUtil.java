@@ -92,7 +92,7 @@ public class ImageUtil {
         int fullHeight = offset;
         int fullWidth = 0;
         int height = 0;
-        int width = 0;
+        int width = offset;
         boolean full = false;
         int col = 0;
         List<AbsoluteZone> oldZones = fromZones(zones, source.getWidth(), source.getHeight());
@@ -106,7 +106,7 @@ public class ImageUtil {
             width += zone.getWidth() + offset;
             if (col == maxCol) {
                 col = 0;
-                width = offset;
+                width = 0;
                 fullWidth = Math.max(fullWidth, width);
                 fullHeight += height;
                 full = true;
@@ -140,7 +140,7 @@ public class ImageUtil {
         return 1.0f / (float) length * (float) aValue;
     }
 
-    public static int relativeToAbsolute(float rValue, int length) {
+    public static int relativeToAbsolute(double rValue, int length) {
         return (int) (rValue * length);
     }
 

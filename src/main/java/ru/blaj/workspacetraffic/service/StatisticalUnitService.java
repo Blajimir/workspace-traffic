@@ -8,12 +8,9 @@ import ru.blaj.workspacetraffic.repository.StatisticalUnitRepository;
 import ru.blaj.workspacetraffic.util.ImageUtil;
 
 import javax.validation.constraints.NotNull;
-import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service

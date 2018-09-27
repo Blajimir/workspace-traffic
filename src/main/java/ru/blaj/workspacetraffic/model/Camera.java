@@ -25,7 +25,7 @@ public class Camera {
     private Long id;
     private String url;
     @JsonIgnore
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    //@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @OneToMany
     @JoinColumn(name = "camera_id")
     private List<WorkspaceZone> zones;

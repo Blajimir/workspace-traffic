@@ -1,6 +1,7 @@
 package ru.blaj.workspacetraffic.model;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
@@ -12,6 +13,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "workspace_zones")
+@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 public class WorkspaceZone extends Zone{
@@ -21,4 +23,33 @@ public class WorkspaceZone extends Zone{
     private Long id;
     @Column(nullable = false)
     private String name;
+
+    public WorkspaceZone withName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    @Override
+    public WorkspaceZone withLeft(double left) {
+        this.left = left;
+        return this;
+    }
+
+    @Override
+    public WorkspaceZone withTop(double top) {
+        this.top = top;
+        return this;
+    }
+
+    @Override
+    public WorkspaceZone withWidth(double width) {
+        this.width = width;
+        return this;
+    }
+
+    @Override
+    public WorkspaceZone withHeight(double height) {
+        this.height = height;
+        return this;
+    }
 }

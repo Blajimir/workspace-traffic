@@ -4,19 +4,28 @@ import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
 import org.junit.Test;
+import org.springframework.test.util.ReflectionTestUtils;
+import ru.blaj.workspacetraffic.model.*;
+import ru.blaj.workspacetraffic.service.AzureVisionService;
+import ru.blaj.workspacetraffic.util.ImageUtil;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class TrafficTest {
     private static final String STREAM_URL_YT = "https://r3---sn-xguxaxjvh-bvwe.googlevideo.com/videoplayback?initcwndbps=448750&cmbypass=yes&source=yt_live_broadcast&sparams=aitags%2Ccmbypass%2Cei%2Cgcr%2Cgir%2Chang%2Cid%2Cinitcwndbps%2Cip%2Cipbits%2Citag%2Ckeepalive%2Clive%2Cmime%2Cmm%2Cmn%2Cms%2Cmv%2Cnoclen%2Cpl%2Crequiressl%2Csource%2Cexpire&ipbits=0&expire=1537446850&gcr=ru&mm=32&pl=20&mn=sn-xguxaxjvh-bvwe&id=UDsPPyXgaFM.0&requiressl=yes&ip=176.215.189.97&signature=7D48CEDDF80E157A8A14004BE2BD9D7C1D5A5C68.8B71E41D054715FB699B7686013D838AFC8896E4&live=1&mt=1537425138&mv=m&ms=lv&hang=1&c=WEB&ei=YT-jW4SjOp337ASs2YyQDg&gir=yes&keepalive=yes&mime=video%2Fmp4&key=yt6&itag=136&aitags=133%2C134%2C135%2C136%2C137%2C160&noclen=1&alr=yes&cpn=PUv3PwL8nXUPbvnA";
     private static final String STREAM_URL_CAM = "http://220.240.123.205/mjpg/video.mjpg?d=1537775591313";
+
     @Test
     public void getJpegFromMp4Video() throws IOException {
         URL url = new URL(STREAM_URL_YT);
@@ -28,8 +37,8 @@ public class TrafficTest {
         System.out.println(huc.getResponseCode());
         grabber.start();
         Frame frame = grabber.grab();
-        if(frame!=null){
-            BufferedImage bImage=converter.convert(frame);
+        if (frame != null) {
+            BufferedImage bImage = converter.convert(frame);
             ImageIO.write(bImage, "jpeg", new File("c:\\Programming\\temp\\TestMp4ToJpeg\\1.jpeg"));
         }
         grabber.stop();
@@ -46,8 +55,8 @@ public class TrafficTest {
         System.out.println(huc.getResponseCode());
         grabber.start();
         Frame frame = grabber.grab();
-        if(frame!=null){
-            BufferedImage bImage=converter.convert(frame);
+        if (frame != null) {
+            BufferedImage bImage = converter.convert(frame);
             ImageIO.write(bImage, "jpeg", new File("c:\\Programming\\temp\\TestMp4ToJpeg\\2.jpeg"));
         }
         grabber.stop();
@@ -62,6 +71,59 @@ public class TrafficTest {
         HttpURLConnection huc = (HttpURLConnection) url.openConnection();
         System.out.println(huc.getConnectTimeout());
         //System.out.println(huc.getResponseMessage());
+    }
+
+    @Test
+    public void testAzureCustomVision() throws IOException {
+        AzureVisionService visionService = new AzureVisionService();
+        ReflectionTestUtils.setField(visionService, "predictionKey", "1040d279ac4540cda6bbc3006265c65f");
+        ReflectionTestUtils.setField(visionService, "projectId", UUID.fromString("b62012e6-6cde-4185-b030-f516b986c297"));
+        ReflectionTestUtils.setField(visionService, "tagFilter", "busy");
+        BufferedImage bi = ImageIO.read(new File("c:\\Programming\\workspace-traffic-dataset\\test\\bbs1.jpg"));
+        List<PredictionZone> predictionZones = visionService.getPrediction(bi);
+        saveImageWithDrawRect(bi, predictionZones);
+    }
+
+    @Test
+    public void testCameraAzureCustomVision() throws IOException {
+        AzureVisionService visionService = new AzureVisionService();
+        ReflectionTestUtils.setField(visionService, "predictionKey", "1040d279ac4540cda6bbc3006265c65f");
+        ReflectionTestUtils.setField(visionService, "projectId", UUID.fromString("b62012e6-6cde-4185-b030-f516b986c297"));
+        ReflectionTestUtils.setField(visionService, "tagFilter", "busy");
+        BufferedImage bi = ImageIO.read(new File("c:\\Programming\\workspace-traffic-dataset\\test\\bbs3.jpg"));
+
+        List<int[]> areaList = new ArrayList<>();
+        areaList.add(new int[]{0, 83, 40, 147, 124});
+        areaList.add(new int[]{1, 86, 94, 176, 193});
+
+        List<WorkspaceZone> wZones = areaList.stream().map(ints -> new WorkspaceZone()
+                .withName(Integer.toString(ints[0]))
+                .withLeft(ImageUtil.absoluteToRelative(ints[1], bi.getWidth()))
+                .withTop(ImageUtil.absoluteToRelative(ints[2], bi.getHeight()))
+                .withWidth(ImageUtil.absoluteToRelative(ints[3] - ints[1], bi.getWidth()))
+                .withHeight(ImageUtil.absoluteToRelative(ints[4] - ints[2], bi.getHeight())))
+                .collect(Collectors.toList());
+        MiddleStructure middleStructure = ImageUtil.generateUnionImage(bi,
+                wZones.stream().map(zone -> (Zone) zone).collect(Collectors.toList()),
+                5, 3);
+
+        List<PredictionZone> predictionZones = visionService.getPrediction(middleStructure.getDest());
+        saveImageWithDrawRect(middleStructure.getDest(), predictionZones);
+    }
+
+    private void saveImageWithDrawRect(BufferedImage bi, List<PredictionZone> predictionZones) throws IOException {
+        BufferedImage nbi = new BufferedImage(bi.getColorModel(), bi.copyData(null)
+                , bi.isAlphaPremultiplied(), null);
+        Graphics2D g = nbi.createGraphics();
+        g.setColor(Color.RED);
+        g.setStroke(new BasicStroke(2));
+        predictionZones.forEach(predictionZone -> {
+            AbsoluteZone zone = ImageUtil.fromZone(predictionZone, bi.getWidth(), bi.getHeight());
+            g.drawRect(zone.getLeft(), zone.getTop(), zone.getWidth(), zone.getHeight());
+        });
+        String filename = String.format("c:\\Programming\\workspace-traffic-dataset\\test\\predict-%d.jpg",
+                new Date().getTime());
+        ImageIO.write(nbi, "jpeg", new File(filename));
     }
 
 }

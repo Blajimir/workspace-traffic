@@ -1,7 +1,6 @@
 package ru.blaj.workspacetraffic.model;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
@@ -12,7 +11,10 @@ import java.util.List;
  *
  * @author Alesandr Kovalev aka blajimir
  * */
-@Data
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode
 @NoArgsConstructor
 public class MiddleStructure {
     private HashMap<AbsoluteZone, AbsoluteZone> betweenZones;

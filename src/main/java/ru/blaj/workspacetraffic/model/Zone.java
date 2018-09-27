@@ -12,30 +12,30 @@ import javax.persistence.MappedSuperclass;
 @NoArgsConstructor
 public class Zone {
     @Column(precision = 10, scale = 2)
-    protected Float left;
+    protected Double left;
     @Column(precision = 10, scale = 2)
-    protected Float top;
+    protected Double top;
     @Column(precision = 10, scale = 2)
-    protected Float width;
+    protected Double width;
     @Column(precision = 10, scale = 2)
-    protected Float height;
+    protected Double height;
 
-    public Zone withLeft(float left){
+    public Zone withLeft(double left){
         this.left = left;
         return this;
     }
 
-    public Zone withTop(float top){
+    public Zone withTop(double top){
         this.top = top;
         return this;
     }
 
-    public Zone withWidth(float width){
+    public Zone withWidth(double width){
         this.width = width;
         return this;
     }
 
-    public Zone withHeight(float height){
+    public Zone withHeight(double height){
         this.height = height;
         return this;
     }
