@@ -90,11 +90,11 @@ public class TrafficTest {
         ReflectionTestUtils.setField(visionService, "predictionKey", "1040d279ac4540cda6bbc3006265c65f");
         ReflectionTestUtils.setField(visionService, "projectId", UUID.fromString("b62012e6-6cde-4185-b030-f516b986c297"));
         ReflectionTestUtils.setField(visionService, "tagFilter", "busy");
-        BufferedImage bi = ImageIO.read(new File("c:\\Programming\\workspace-traffic-dataset\\test\\bbs3.jpg"));
+        BufferedImage bi = ImageIO.read(new File("c:\\Programming\\workspace-traffic-dataset\\test\\bbs1.jpg"));
 
         List<int[]> areaList = new ArrayList<>();
         areaList.add(new int[]{0, 83, 40, 147, 124});
-        areaList.add(new int[]{1, 86, 94, 176, 193});
+        areaList.add(new int[]{1, 89, 76, 176, 193});
 
         List<WorkspaceZone> wZones = areaList.stream().map(ints -> new WorkspaceZone()
                 .withName(Integer.toString(ints[0]))
