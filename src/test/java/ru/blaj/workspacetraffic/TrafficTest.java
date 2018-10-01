@@ -126,4 +126,24 @@ public class TrafficTest {
         ImageIO.write(nbi, "jpeg", new File(filename));
     }
 
+    @Test
+    public void iouTest(){
+        double[] a = new double[]{4,2,3,3};
+        double[] b = new double[]{4,3,3,1};
+
+        double xMax = Math.max(a[0], b[0]);
+        double yMax = Math.max(a[1], b[1]);
+        double xMin = Math.min(a[0]+a[2], b[0]+b[2]);
+        double yMin = Math.min(a[1]+a[3], b[1]+b[3]);
+
+        double interArea = (xMin - xMax) * (yMin - yMax);
+
+        double aArea = a[2] * a[3];
+        double bArea = b[2] * b[3];
+
+        double iou = interArea / (aArea + bArea - interArea);
+
+        System.out.println(String.format("%.2f/(%.2f + %.2f - %.2f)=%.2f", interArea, aArea, bArea, interArea, iou));
+    }
+
 }

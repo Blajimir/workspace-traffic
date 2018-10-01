@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import ru.blaj.workspacetraffic.model.Camera;
 import ru.blaj.workspacetraffic.model.WorkspaceZone;
-import ru.blaj.workspacetraffic.model.Zone;
 import ru.blaj.workspacetraffic.repository.CameraRepository;
 import ru.blaj.workspacetraffic.util.ImageUtil;
 

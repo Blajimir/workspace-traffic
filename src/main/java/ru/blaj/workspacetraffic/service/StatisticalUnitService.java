@@ -20,6 +20,10 @@ public class StatisticalUnitService {
     private StatisticalUnitRepository statisticalUnitRepository;
     @Autowired
     private CameraService cameraService;
+    @Autowired
+    private AzureVisionService visionService;
+    @Value("app.azure.custom-vision.trashold-in-percent")
+    private int trashold;
 
     @Value("${app.with-cam-image}")
     private boolean isWithCamImage;
@@ -85,7 +89,14 @@ public class StatisticalUnitService {
         Collection<StatisticalUnit> result = Collections.emptyList();
         BufferedImage bi = cameraService.getImageFromCamera(camera);
         if(bi!=null){
-            ImageUtil.generateUnionImage(bi, toZones(camera.getZones()),5, 4);
+            //TODO: Добавить инмпорт значений offset и maxCol из properties
+            MiddleStructure structure = ImageUtil.generateUnionImage(bi, toZones(camera.getZones()),5, 4);
+            List<PredictionZone> predictionZones = visionService.getPrediction(structure.getDest())
+                    .stream().filter(predictionZone -> predictionZone.getProbability()>this.trashold)
+                    .collect(Collectors.toList());
+           // predictionZones
+
+
         }
         return result;
     }
