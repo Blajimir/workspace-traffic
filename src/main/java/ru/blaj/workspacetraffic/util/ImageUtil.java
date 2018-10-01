@@ -4,6 +4,8 @@ import lombok.extern.java.Log;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import ru.blaj.workspacetraffic.model.AbsoluteZone;
 import ru.blaj.workspacetraffic.model.MiddleStructure;
@@ -24,11 +26,13 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Log
+@Component
 public class ImageUtil {
-    //TODO: изменить класс на компонент для указания кол-ва попыток и таймаута через properties
-    private static int tryNum = 3;
+    //TODO: установить таймаут через properties
+    @Value("${app.try-number-camera-conection}")
+    private int tryNum;
 
-    public static BufferedImage getImageFromVideo(String surl, String format) throws IOException {
+    public BufferedImage getImageFromVideo(String surl, String format) throws IOException {
         BufferedImage result = null;
         Optional<HttpURLConnection> ohuc = tryConnection(surl);
         if (ohuc.isPresent()) {
@@ -49,7 +53,7 @@ public class ImageUtil {
         return result;
     }
 
-    public static Optional<HttpURLConnection> tryConnection(String surl) {
+    public Optional<HttpURLConnection> tryConnection(String surl) {
         HttpURLConnection result = null;
         try {
             URL url = new URL(surl);
@@ -69,24 +73,45 @@ public class ImageUtil {
         return Optional.ofNullable(result);
     }
 
-    public static byte[] bImageToJpeg(BufferedImage bImage) throws IOException {
+    public byte[] bImageToJpeg(BufferedImage bImage) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(bImage, "jpeg", baos);
         return baos.toByteArray();
     }
 
-    public static String bImageToJpegBase64(BufferedImage bImage) throws IOException {
+    public String bImageToJpegBase64(BufferedImage bImage) throws IOException {
         return Base64.getEncoder().encodeToString(bImageToJpeg(bImage));
     }
 
-    public static BufferedImage JpegToBImage(String base64str) throws IOException {
+    public BufferedImage JpegToBImage(String base64str) throws IOException {
         byte[] buffer = Base64.getDecoder().decode(base64str);
         ByteArrayInputStream bais = new ByteArrayInputStream(buffer);
         return ImageIO.read(bais);
     }
 
-    //TODO: допилить функцию склейки зон изображений в одно изображение
-    public static MiddleStructure generateUnionImage(BufferedImage source, List<Zone> zones, int offset, int maxCol) {
+    public double getIoU(Zone zone, Zone predictionZone) {
+
+        Zone interZone = new Zone()
+                .withLeft(Math.max(zone.getLeft(), predictionZone.getLeft()))
+                .withTop(Math.max(zone.getTop(), predictionZone.getTop()));
+        interZone.setWidth(Math.min(zone.getLeft() + zone.getWidth(), predictionZone.getLeft() + predictionZone.getWidth()) - interZone.getLeft());
+        interZone.setHeight(Math.min(zone.getTop() + zone.getHeight(), predictionZone.getTop() + predictionZone.getHeight()) - interZone.getTop());
+
+        double interArea = Optional.of(interZone)
+                .filter(z -> z.getWidth() > 0 && z.getHeight() > 0)
+                .map(z -> z.getWidth() * z.getHeight()).orElse(0.0);
+
+        double zoneArea = zone.getWidth() * zone.getHeight();
+        double predictionZoneArea = predictionZone.getWidth() * predictionZone.getHeight();
+
+        return interArea / (zoneArea + predictionZoneArea - interArea);
+    }
+
+    /**
+     * Функция которая склеивает зоны с камеры в одно изображение
+     * TODO: дописать javadoc для этой функции
+     */
+    public MiddleStructure generateUnionImage(BufferedImage source, List<Zone> zones, int offset, int maxCol) {
         MiddleStructure result = null;
         BufferedImage dest = null;
         int fullHeight = offset;
@@ -117,7 +142,7 @@ public class ImageUtil {
             fullHeight += height;
         }
 
-        dest = new BufferedImage(fullWidth+offset, fullHeight+offset, source.getType());
+        dest = new BufferedImage(fullWidth + offset, fullHeight + offset, source.getType());
         Graphics2D g = (Graphics2D) dest.getGraphics();
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, dest.getWidth(), dest.getHeight());
@@ -126,7 +151,7 @@ public class ImageUtil {
             AbsoluteZone oldZone = oldZones.get(newZones.indexOf(zone));
             g.drawImage(source,
                     zone.getLeft(), zone.getTop(),
-                    zone.getLeft() + zone.getWidth(),zone.getTop() + zone.getHeight(),
+                    zone.getLeft() + zone.getWidth(), zone.getTop() + zone.getHeight(),
                     oldZone.getLeft(), oldZone.getTop(),
                     oldZone.getLeft() + oldZone.getWidth(), oldZone.getTop() + oldZone.getHeight(),
                     null);
@@ -136,37 +161,37 @@ public class ImageUtil {
         return result;
     }
 
-    public static float absoluteToRelative(int aValue, int length) {
+    public float absoluteToRelative(int aValue, int length) {
         return 1.0f / (float) length * (float) aValue;
     }
 
-    public static int relativeToAbsolute(double rValue, int length) {
+    public int relativeToAbsolute(double rValue, int length) {
         return (int) (rValue * length);
     }
 
-    public static Zone fromAbsoluteZone(AbsoluteZone zone, int width, int height) {
+    public Zone fromAbsoluteZone(AbsoluteZone zone, int width, int height) {
         return new Zone()
-                .withLeft(ImageUtil.absoluteToRelative(zone.getLeft(), width))
-                .withTop(ImageUtil.absoluteToRelative(zone.getTop(), height))
-                .withWidth(ImageUtil.absoluteToRelative(zone.getWidth(), width))
-                .withHeight(ImageUtil.absoluteToRelative(zone.getHeight(), height));
+                .withLeft(this.absoluteToRelative(zone.getLeft(), width))
+                .withTop(this.absoluteToRelative(zone.getTop(), height))
+                .withWidth(this.absoluteToRelative(zone.getWidth(), width))
+                .withHeight(this.absoluteToRelative(zone.getHeight(), height));
     }
 
-    public static AbsoluteZone fromZone(Zone zone, int width, int height) {
+    public AbsoluteZone fromZone(Zone zone, int width, int height) {
         return new AbsoluteZone()
-                .withLeft(ImageUtil.relativeToAbsolute(zone.getLeft(), width))
-                .withTop(ImageUtil.relativeToAbsolute(zone.getTop(), height))
-                .withWidth(ImageUtil.relativeToAbsolute(zone.getWidth(), width))
-                .withHeight(ImageUtil.relativeToAbsolute(zone.getHeight(), height));
+                .withLeft(this.relativeToAbsolute(zone.getLeft(), width))
+                .withTop(this.relativeToAbsolute(zone.getTop(), height))
+                .withWidth(this.relativeToAbsolute(zone.getWidth(), width))
+                .withHeight(this.relativeToAbsolute(zone.getHeight(), height));
     }
 
-    public static List<AbsoluteZone> fromZones(List<Zone> zones, int width, int height) {
+    public List<AbsoluteZone> fromZones(List<Zone> zones, int width, int height) {
         return zones.stream()
                 .map(zone -> fromZone(zone, width, height))
                 .collect(Collectors.toList());
     }
 
-    public static List<Zone> fromAbsoluteZones(List<AbsoluteZone> zones, int width, int height) {
+    public List<Zone> fromAbsoluteZones(List<AbsoluteZone> zones, int width, int height) {
         return zones.stream()
                 .map(zone -> fromAbsoluteZone(zone, width, height))
                 .collect(Collectors.toList());

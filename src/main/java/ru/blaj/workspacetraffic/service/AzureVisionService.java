@@ -6,6 +6,7 @@ import com.microsoft.azure.cognitiveservices.vision.customvision.prediction.Pred
 import com.microsoft.azure.cognitiveservices.vision.customvision.prediction.models.ImagePrediction;
 import com.microsoft.azure.cognitiveservices.vision.customvision.prediction.models.Prediction;
 import lombok.extern.java.Log;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.blaj.workspacetraffic.model.PredictionZone;
@@ -25,6 +26,8 @@ import java.util.stream.Collectors;
 @Service
 @Log
 public class AzureVisionService {
+    @Autowired
+    private ImageUtil imageUtil;
     @Value("${app.azure.custom-vision.prediction-key}")
     private String predictionKey;
     @Value("${app.azure.custom-vision.project-id}")
@@ -38,7 +41,7 @@ public class AzureVisionService {
         try {
             ImagePrediction predictionResult = predictClient.predictions().predictImage()
                     .withProjectId(this.projectId)
-                    .withImageData(ImageUtil.bImageToJpeg(bi))
+                    .withImageData(imageUtil.bImageToJpeg(bi))
                     .execute();
             result = toPredictionZone(predictionResult.predictions());
             log.info(new ObjectMapper().writer().withDefaultPrettyPrinter()

@@ -87,6 +87,7 @@ public class TrafficTest {
     @Test
     public void testCameraAzureCustomVision() throws IOException {
         AzureVisionService visionService = new AzureVisionService();
+        ImageUtil imageUtil = new ImageUtil();
         ReflectionTestUtils.setField(visionService, "predictionKey", "1040d279ac4540cda6bbc3006265c65f");
         ReflectionTestUtils.setField(visionService, "projectId", UUID.fromString("b62012e6-6cde-4185-b030-f516b986c297"));
         ReflectionTestUtils.setField(visionService, "tagFilter", "busy");
@@ -98,12 +99,12 @@ public class TrafficTest {
 
         List<WorkspaceZone> wZones = areaList.stream().map(ints -> new WorkspaceZone()
                 .withName(Integer.toString(ints[0]))
-                .withLeft(ImageUtil.absoluteToRelative(ints[1], bi.getWidth()))
-                .withTop(ImageUtil.absoluteToRelative(ints[2], bi.getHeight()))
-                .withWidth(ImageUtil.absoluteToRelative(ints[3] - ints[1], bi.getWidth()))
-                .withHeight(ImageUtil.absoluteToRelative(ints[4] - ints[2], bi.getHeight())))
+                .withLeft(imageUtil.absoluteToRelative(ints[1], bi.getWidth()))
+                .withTop(imageUtil.absoluteToRelative(ints[2], bi.getHeight()))
+                .withWidth(imageUtil.absoluteToRelative(ints[3] - ints[1], bi.getWidth()))
+                .withHeight(imageUtil.absoluteToRelative(ints[4] - ints[2], bi.getHeight())))
                 .collect(Collectors.toList());
-        MiddleStructure middleStructure = ImageUtil.generateUnionImage(bi,
+        MiddleStructure middleStructure = imageUtil.generateUnionImage(bi,
                 wZones.stream().map(zone -> (Zone) zone).collect(Collectors.toList()),
                 5, 3);
 
@@ -112,13 +113,14 @@ public class TrafficTest {
     }
 
     private void saveImageWithDrawRect(BufferedImage bi, List<PredictionZone> predictionZones) throws IOException {
+        ImageUtil imageUtil = new ImageUtil();
         BufferedImage nbi = new BufferedImage(bi.getColorModel(), bi.copyData(null)
                 , bi.isAlphaPremultiplied(), null);
         Graphics2D g = nbi.createGraphics();
         g.setColor(Color.RED);
         g.setStroke(new BasicStroke(2));
         predictionZones.forEach(predictionZone -> {
-            AbsoluteZone zone = ImageUtil.fromZone(predictionZone, bi.getWidth(), bi.getHeight());
+            AbsoluteZone zone = imageUtil.fromZone(predictionZone, bi.getWidth(), bi.getHeight());
             g.drawRect(zone.getLeft(), zone.getTop(), zone.getWidth(), zone.getHeight());
         });
         String filename = String.format("c:\\Programming\\workspace-traffic-dataset\\test\\predict-%d.jpg",

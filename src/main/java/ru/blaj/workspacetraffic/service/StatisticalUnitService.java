@@ -22,16 +22,18 @@ public class StatisticalUnitService {
     private CameraService cameraService;
     @Autowired
     private AzureVisionService visionService;
-    @Value("app.azure.custom-vision.trashold-in-percent")
+    @Autowired
+    private ImageUtil imageUtil;
+    @Value("${app.azure.custom-vision.trashold-in-percent}")
     private int trashold;
 
     @Value("${app.with-cam-image}")
     private boolean isWithCamImage;
 
-    @Autowired
+    /*/@Autowired
     public StatisticalUnitService(StatisticalUnitRepository statisticalUnitRepository) {
         this.statisticalUnitRepository = statisticalUnitRepository;
-    }
+    }//*/
 
     public Collection<StatisticalUnit> getAllUnits() {
         return Collections.unmodifiableCollection(this.statisticalUnitRepository.findAll());
@@ -90,11 +92,14 @@ public class StatisticalUnitService {
         BufferedImage bi = cameraService.getImageFromCamera(camera);
         if(bi!=null){
             //TODO: Добавить инмпорт значений offset и maxCol из properties
-            MiddleStructure structure = ImageUtil.generateUnionImage(bi, toZones(camera.getZones()),5, 4);
+            MiddleStructure structure = imageUtil.generateUnionImage(bi, toZones(camera.getZones()),5, 4);
             List<PredictionZone> predictionZones = visionService.getPrediction(structure.getDest())
                     .stream().filter(predictionZone -> predictionZone.getProbability()>this.trashold)
                     .collect(Collectors.toList());
-           // predictionZones
+           structure.getBetweenZones().forEach((aZone1, aZone2) -> {
+               //TODO: допилить проверку на пересечение зон и предикшен зон
+               aZone1
+           });
 
 
         }

@@ -26,10 +26,12 @@ import java.util.Optional;
 @Log
 public class CameraService {
     private CameraRepository cameraRepository;
+    private ImageUtil imageUtil;
 
     @Autowired
-    public CameraService(CameraRepository cameraRepository) {
+    public CameraService(CameraRepository cameraRepository, ImageUtil imageUtil) {
         this.cameraRepository = cameraRepository;
+        this.imageUtil = imageUtil;
     }
 
     public Collection<Camera> getAllCameras() {
@@ -82,7 +84,7 @@ public class CameraService {
     public BufferedImage getImageFromCamera(Camera camera){
         BufferedImage result = null;
         try {
-            result = ImageUtil.getImageFromVideo(camera.getUrl(), null);
+            result = imageUtil.getImageFromVideo(camera.getUrl(), null);
         } catch (IOException e) {
            log.warning(e.getMessage());
         }
@@ -90,14 +92,14 @@ public class CameraService {
     }
 
     public boolean isConnectionAvailable(@NotNull Camera camera) {
-        return ImageUtil.tryConnection(camera.getUrl()).isPresent();
+        return imageUtil.tryConnection(camera.getUrl()).isPresent();
     }
 
     public boolean isCameraAvailable(@NotNull Camera camera) {
         boolean result = false;
         if (!StringUtils.isEmpty(camera.getUrl())) {
             try {
-                if (ImageUtil.getImageFromVideo(camera.getUrl(), null) != null) {
+                if (imageUtil.getImageFromVideo(camera.getUrl(), null) != null) {
                     result = true;
                 }
             } catch (IOException e) {
