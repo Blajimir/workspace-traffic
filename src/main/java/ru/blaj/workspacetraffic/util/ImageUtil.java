@@ -88,7 +88,9 @@ public class ImageUtil {
         ByteArrayInputStream bais = new ByteArrayInputStream(buffer);
         return ImageIO.read(bais);
     }
-
+    /**
+     * Intersection over Union
+     * */
     public double getIoU(Zone zone, Zone predictionZone) {
 
         Zone interZone = new Zone()
@@ -157,7 +159,7 @@ public class ImageUtil {
                     null);
         }
 
-        result = new MiddleStructure(source, dest, oldZones, newZones);
+        result = new MiddleStructure(source, dest, zones, oldZones, newZones);
         return result;
     }
 

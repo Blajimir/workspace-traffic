@@ -16,11 +16,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Date;
+import java.util.*;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class TrafficTest {
     private static final String STREAM_URL_YT = "https://r3---sn-xguxaxjvh-bvwe.googlevideo.com/videoplayback?initcwndbps=448750&cmbypass=yes&source=yt_live_broadcast&sparams=aitags%2Ccmbypass%2Cei%2Cgcr%2Cgir%2Chang%2Cid%2Cinitcwndbps%2Cip%2Cipbits%2Citag%2Ckeepalive%2Clive%2Cmime%2Cmm%2Cmn%2Cms%2Cmv%2Cnoclen%2Cpl%2Crequiressl%2Csource%2Cexpire&ipbits=0&expire=1537446850&gcr=ru&mm=32&pl=20&mn=sn-xguxaxjvh-bvwe&id=UDsPPyXgaFM.0&requiressl=yes&ip=176.215.189.97&signature=7D48CEDDF80E157A8A14004BE2BD9D7C1D5A5C68.8B71E41D054715FB699B7686013D838AFC8896E4&live=1&mt=1537425138&mv=m&ms=lv&hang=1&c=WEB&ei=YT-jW4SjOp337ASs2YyQDg&gir=yes&keepalive=yes&mime=video%2Fmp4&key=yt6&itag=136&aitags=133%2C134%2C135%2C136%2C137%2C160&noclen=1&alr=yes&cpn=PUv3PwL8nXUPbvnA";
@@ -146,6 +145,37 @@ public class TrafficTest {
         double iou = interArea / (aArea + bArea - interArea);
 
         System.out.println(String.format("%.2f/(%.2f + %.2f - %.2f)=%.2f", interArea, aArea, bArea, interArea, iou));
+    }
+
+    @Test
+    public void testStreamFlatMap(){
+        ImageUtil imageUtil = new ImageUtil();
+        List<Zone> zones = new ArrayList<>();
+        zones.add(new Zone().withLeft(2).withTop(1).withWidth(4).withHeight(3));
+        zones.add(new Zone().withLeft(8).withTop(2).withWidth(3).withHeight(3));
+
+        List<Zone> pZones = new ArrayList<>();
+        pZones.add(new Zone().withLeft(4).withTop(1).withWidth(1).withHeight(1));
+        pZones.add(new Zone().withLeft(4).withTop(3).withWidth(2).withHeight(2));
+        pZones.add(new Zone().withLeft(10).withTop(3).withWidth(2).withHeight(2));
+        pZones.add(new Zone().withLeft(3).withTop(3).withWidth(10).withHeight(3));
+
+        System.out.println(zones.stream().map(z -> pZones.stream().filter(pz -> imageUtil.getIoU(z, pz) > 0)
+                .collect(Collectors.toList())).flatMap(Collection::stream).collect(Collectors.toList()));
+    }
+
+    @Test
+    public void hashTest(){
+        WorkspaceZone wzone = new WorkspaceZone()
+                .withName("zone0").withLeft(0.0).withTop(0.0).withHeight(0.5).withWidth(0.5);
+        Zone zone = (Zone) wzone;
+        Zone anotherZone = new Zone();
+        System.out.println(String.format("WorkspaceZone id: %d %nZone id: %d %nAnother zone id: %d",
+                System.identityHashCode(wzone),
+                System.identityHashCode(zone),
+                System.identityHashCode(anotherZone)));
+
+        System.out.println(String.format("zones equals: %b%nanother zones equals: %b", wzone == zone, wzone==anotherZone));
     }
 
 }

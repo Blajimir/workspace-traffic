@@ -17,7 +17,8 @@ public class CamImage {
     private Long id;
     @Column(name = "camera_id")
     private Long cameraId;
-    private String content;
+    private String contentImage;
+    private String unionContentImage;
     @ElementCollection
     private List<PredictionZone> predictions;
 }
