@@ -1,5 +1,6 @@
 package ru.blaj.workspacetraffic.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -18,14 +19,23 @@ import javax.persistence.*;
 @NoArgsConstructor
 public class WorkspaceZone extends Zone{
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "workspace_zones_seq")
-    @SequenceGenerator(name = "workspace_zones_seq", sequenceName = "workspace_zones_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "workspace_zones_id_seq")
+    @SequenceGenerator(name = "workspace_zones_id_seq", sequenceName = "workspace_zones_id_seq", allocationSize = 1)
     private Long id;
     @Column(nullable = false)
     private String name;
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "camera_id")
+    private Camera camera;
 
     public WorkspaceZone withName(String name) {
         this.name = name;
+        return this;
+    }
+
+    public WorkspaceZone withCamera(Camera camera) {
+        this.camera = camera;
         return this;
     }
 

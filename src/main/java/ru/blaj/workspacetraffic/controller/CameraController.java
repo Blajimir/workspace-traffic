@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 import java.util.Collection;
 
 @RestController
-@RequestMapping(path="/api/controller", produces = "application/json;charset=utf-8")
+@RequestMapping(path="/api/camera", produces = "application/json;charset=utf-8")
 public class CameraController {
     @Autowired
     private CameraService cameraService;

@@ -20,13 +20,10 @@ import java.util.List;
 @NoArgsConstructor
 public class Camera {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cameras_seq")
-    @SequenceGenerator(name="camera_seq", sequenceName = "camera_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "camera_id_seq")
+    @SequenceGenerator(name="camera_id_seq", sequenceName = "camera_id_seq", allocationSize = 1)
     private Long id;
     private String url;
-    @JsonIgnore
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @OneToMany
-    @JoinColumn(name = "camera_id")
+    @OneToMany(mappedBy = "camera", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WorkspaceZone> zones;
 }

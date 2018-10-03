@@ -36,7 +36,7 @@ public class StatisticalUnitService {
     @Value("${app.azure.custom-vision.prediction-trashold-in-percent}")
     private int predictionTrashold;
     @Value("${app.azure.custom-vision.iou-trashold}")
-    private int iouTrashold;
+    private float iouTrashold;
     @Value("${app.union-image.offset}")
     private int offset;
     @Value("${app.union-image.colums}")

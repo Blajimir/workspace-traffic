@@ -12,8 +12,8 @@ import java.util.List;
 @NoArgsConstructor
 public class CamImage {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cam_images_seq")
-    @SequenceGenerator(name = "cam_images_seq", sequenceName = "cam_images_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cam_images_id_seq")
+    @SequenceGenerator(name = "cam_images_id_seq", sequenceName = "cam_images_id_seq", allocationSize = 1)
     private Long id;
     @Column(name = "camera_id")
     private Long cameraId;

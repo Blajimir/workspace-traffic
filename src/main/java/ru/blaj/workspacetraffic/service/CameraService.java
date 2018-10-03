@@ -51,8 +51,12 @@ public class CameraService {
                 zone.setLeft(0.0);
                 zone.setHeight(1.0);
                 zone.setWidth(1.0);
+                zone.setCamera(camera);
                 camera.setZones(Collections.singletonList(zone));
             }
+            Optional.ofNullable(camera.getZones()).ifPresent(zones -> zones.stream()
+                    .filter(zone -> zone.getCamera()==null)
+                    .forEach(zone -> zone.setCamera(camera)));
             result = this.cameraRepository.save(camera);
         }
         return result;
@@ -67,7 +71,12 @@ public class CameraService {
         return Optional.of(camera)
                 .filter(cam -> cam.getId() != null && cam.getId() != 0)
                 .filter(cam -> !StringUtils.isEmpty(cam.getUrl()))
-                .map(cam -> this.cameraRepository.save(cam))
+                .map(cam -> {
+                    Optional.ofNullable(cam.getZones()).ifPresent(zones -> zones.stream()
+                            .filter(zone -> zone.getCamera()==null)
+                            .forEach(zone -> zone.setCamera(cam)));
+                    return this.cameraRepository.save(cam);
+                })
                 .orElse(null);
     }
 

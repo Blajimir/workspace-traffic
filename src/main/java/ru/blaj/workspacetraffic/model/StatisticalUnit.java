@@ -12,13 +12,13 @@ import java.util.Date;
 @NoArgsConstructor
 public class StatisticalUnit {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "statistics_seq")
-    @SequenceGenerator(name = "statistics_seq", sequenceName = "statistics_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "statistics_id_seq")
+    @SequenceGenerator(name = "statistics_id_seq", sequenceName = "statistics_id_seq", allocationSize = 1)
     private Long id;
-    @OneToMany
+    @ManyToOne
     @JoinColumn(name = "camera_id")
     private Camera camera;
-    @OneToMany
+    @ManyToOne
     @JoinColumn(name = "zone_id")
     private WorkspaceZone zone;
     private boolean busy;

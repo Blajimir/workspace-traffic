@@ -2,7 +2,6 @@ package ru.blaj.workspacetraffic.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.blaj.workspacetraffic.util.ImageUtil;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
@@ -11,13 +10,13 @@ import javax.persistence.MappedSuperclass;
 @Data
 @NoArgsConstructor
 public class Zone {
-    @Column(precision = 10, scale = 2)
+    @Column(name = "z_left", precision = 10, scale = 2)
     protected Double left;
-    @Column(precision = 10, scale = 2)
+    @Column(name = "z_top", precision = 10, scale = 2)
     protected Double top;
-    @Column(precision = 10, scale = 2)
+    @Column(name = "z_width", precision = 10, scale = 2)
     protected Double width;
-    @Column(precision = 10, scale = 2)
+    @Column(name = "z_height", precision = 10, scale = 2)
     protected Double height;
 
     public Zone withLeft(double left){
