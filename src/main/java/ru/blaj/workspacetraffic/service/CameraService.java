@@ -90,7 +90,7 @@ public class CameraService {
         }
     }
 
-    public BufferedImage getImageFromCamera(Camera camera){
+    public BufferedImage getImageFromCamera(@NotNull Camera camera){
         BufferedImage result = null;
         try {
             result = imageUtil.getImageFromVideo(camera.getUrl(), null);
@@ -98,6 +98,23 @@ public class CameraService {
            log.warning(e.getMessage());
         }
         return result;
+    }
+
+    public String getImageFromCameraAsJpegBase64(@NotNull Camera camera){
+        return Optional.ofNullable(getImageFromCamera(camera)).map(bImage -> {
+            try {
+                return imageUtil.bImageToJpegBase64(bImage);
+            } catch (IOException e) {
+                log.warning(e.getMessage());
+                return null;
+            }
+        }).orElse(null);
+    }
+
+    public String getImageFromCameraAsJpegBase64(@NotNull Long id){
+        return Optional.ofNullable(cameraRepository.findById(id))
+                .map(cam -> cam.orElse(null)).map(this::getImageFromCameraAsJpegBase64)
+                .orElse(null);
     }
 
     public boolean isConnectionAvailable(@NotNull Camera camera) {
