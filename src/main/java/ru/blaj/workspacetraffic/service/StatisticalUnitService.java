@@ -28,7 +28,7 @@ public class StatisticalUnitService {
     @Autowired
     private CameraService cameraService;
     @Autowired
-    private AzureVisionService visionService;
+    private VisionService visionService;
     @Autowired
     private ImageUtil imageUtil;
     @Value("${app.with-cam-image}")

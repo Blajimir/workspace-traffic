@@ -1,5 +1,6 @@
 package ru.blaj.workspacetraffic.model;
 
+import com.fasterxml.jackson.annotation.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -17,9 +18,13 @@ public class StatisticalUnit {
     private Long id;
     @ManyToOne
     @JoinColumn(name = "camera_id")
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+    @JsonIdentityReference(alwaysAsId = true)
     private Camera camera;
     @ManyToOne
     @JoinColumn(name = "zone_id")
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+    @JsonIdentityReference(alwaysAsId = true)
     private WorkspaceZone zone;
     private boolean busy;
     @Temporal(TemporalType.TIMESTAMP)
@@ -42,6 +47,11 @@ public class StatisticalUnit {
 
     public StatisticalUnit withBusy(boolean busy){
         this.busy = busy;
+        return this;
+    }
+
+    public StatisticalUnit withDate(Date date){
+        this.date = date;
         return this;
     }
 }

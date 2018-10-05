@@ -8,6 +8,7 @@ import com.microsoft.azure.cognitiveservices.vision.customvision.prediction.mode
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import ru.blaj.workspacetraffic.model.PredictionZone;
 import ru.blaj.workspacetraffic.util.ImageUtil;
@@ -24,8 +25,9 @@ import java.util.stream.Collectors;
  * @author Alesandr Kovalev aka blajimir
  * */
 @Service
+@Profile("!test")
 @Log
-public class AzureVisionService {
+public class AzureVisionService implements VisionService{
     @Autowired
     private ImageUtil imageUtil;
     @Value("${app.azure.custom-vision.prediction-key}")
@@ -35,6 +37,7 @@ public class AzureVisionService {
     @Value("${app.azure.custom-vision.filter-tag}")
     private String tagFilter;
     //TODO: дописать функцию!!!
+    @Override
     public List<PredictionZone> getPrediction(BufferedImage bi){
         List<PredictionZone> result = null;
         PredictionEndpoint predictClient = CustomVisionPredictionManager.authenticate(this.predictionKey);
