@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import ru.blaj.workspacetraffic.model.Camera;
 import ru.blaj.workspacetraffic.model.PredictionZone;
 import ru.blaj.workspacetraffic.model.WorkspaceZone;
+import ru.blaj.workspacetraffic.util.ImageUtil;
 
 import javax.annotation.PostConstruct;
 import java.awt.image.BufferedImage;
@@ -22,6 +23,9 @@ public class FakeAzureVisionService implements VisionService{
     @Autowired
     private CameraService cameraService;
 
+    @Autowired
+    private ImageUtil imageUtil;
+
     private boolean busy;
 
     @PostConstruct
@@ -30,22 +34,33 @@ public class FakeAzureVisionService implements VisionService{
 
         Camera camera = new Camera();
         camera.setUrl("http://220.240.123.205/mjpg/video.mjpg");
+        BufferedImage bi = cameraService.getImageFromCamera(camera);
+        /*
+            <area target="" alt="" title="" href="" coords="468,190,646,463" shape="rect">
+            <area target="" alt="" title="" href="" coords="722,247,874,511" shape="rect">
+        */
 
         List<WorkspaceZone> zones = new ArrayList<>();
         WorkspaceZone zone = new WorkspaceZone()
                 .withName("test1")
-                .withLeft(0.1).withTop(0.1)
-                .withWidth(0.3).withHeight(0.2)
+                .withLeft(imageUtil.absoluteToRelative(468, bi.getWidth()))
+                .withTop(imageUtil.absoluteToRelative(190, bi.getHeight()))
+                .withWidth(imageUtil.absoluteToRelative(646 - 468, bi.getWidth()))
+                .withHeight(imageUtil.absoluteToRelative(463 - 190, bi.getHeight()))
                 .withCamera(camera);
         zones.add(zone);
         zone = new WorkspaceZone()
                 .withName("test2")
-                .withLeft(0.4).withTop(0.2)
-                .withWidth(0.3).withHeight(0.2)
+                .withLeft(imageUtil.absoluteToRelative(722, bi.getWidth()))
+                .withTop(imageUtil.absoluteToRelative(247, bi.getHeight()))
+                .withWidth(imageUtil.absoluteToRelative(874 - 722, bi.getWidth()))
+                .withHeight(imageUtil.absoluteToRelative(511 - 247, bi.getHeight()))
                 .withCamera(camera);
         zones.add(zone);
 
         camera.setZones(zones);
+
+        cameraService.saveCamera(camera);
     }
 
     @Override
