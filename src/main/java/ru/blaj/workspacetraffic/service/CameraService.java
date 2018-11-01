@@ -44,16 +44,6 @@ public class CameraService {
             camera.setId(null);
         }
         if(this.isCameraAvailable(camera)){
-            if(Optional.ofNullable(camera.getZones()).orElseGet(Collections::emptyList).isEmpty()){
-                WorkspaceZone zone = new WorkspaceZone();
-                zone.setName("zone0");
-                zone.setTop(0.0);
-                zone.setLeft(0.0);
-                zone.setHeight(1.0);
-                zone.setWidth(1.0);
-                zone.setCamera(camera);
-                camera.setZones(Collections.singletonList(zone));
-            }
             Optional.ofNullable(camera.getZones()).ifPresent(zones -> zones.stream()
                     .filter(zone -> zone.getCamera()==null)
                     .forEach(zone -> zone.setCamera(camera)));

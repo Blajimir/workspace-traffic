@@ -60,7 +60,7 @@ public class AzureVisionService implements VisionService{
     private List<PredictionZone> toPredictionZone(List<Prediction> predictions){
         return predictions.stream().filter(p -> this.tagFilter.contains(p.tagName())).map(p -> new PredictionZone()
                 .withTag(p.tagName())
-                .withProbability(p.probability())
+                .withProbability(p.probability()*100.0)
                 .withLeft(p.boundingBox().left())
                 .withTop(p.boundingBox().top())
                 .withWidth(p.boundingBox().width())

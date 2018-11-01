@@ -17,8 +17,12 @@ public class CamImage {
     private Long id;
     @Column(name = "camera_id")
     private Long cameraId;
+    @Column(columnDefinition = "text")
     private String contentImage;
+    @Column(columnDefinition = "text")
     private String unionContentImage;
+    @Column(name="use_zone")
+    private boolean useZone;
     @ElementCollection
     private List<PredictionZone> predictions;
 }

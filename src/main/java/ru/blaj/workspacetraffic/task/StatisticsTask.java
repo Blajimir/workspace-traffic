@@ -20,10 +20,9 @@ public class StatisticsTask {
     @Scheduled(cron = "0 */2 * * * ?")
     public void statisticsCollection(){
 
-        cameraService.getAllCameras().stream().map(unitService::getUnitsByCamera)
-                .flatMap(Collection::stream)
+        cameraService.getAllCameras().stream().map(unitService::saveUnitFromCamera)
                 .forEach(unit ->
-                        log.info(String.format("Save unit for camera: %d unit: {id: %d, zone-name: %s, busy: %b}",
-                                unit.getCamera().getId(), unit.getId(), unit.getZone().getName(), unit.isBusy())));
+                        log.info(String.format("Save unit for camera: %d  unit id: %d use zone: %b count: %d",
+                                unit.getCamera().getId(), unit.getId(), unit.isUseZone(), unit.getCount())));
     }
 }

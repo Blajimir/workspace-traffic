@@ -11,10 +11,7 @@ import ru.blaj.workspacetraffic.util.ImageUtil;
 import javax.validation.constraints.NotNull;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -61,17 +58,6 @@ public class StatisticalUnitService {
         return Optional.of(camera).map(cam -> this.getUnitsByCamera(cam.getId())).orElse(Collections.emptyList());
     }
 
-    public Collection<StatisticalUnit> getUnitsByZone(Long id) {
-        return Optional.ofNullable(id).filter(il -> il != 0)
-                .map(il -> this.statisticalUnitRepository.findAllByZone_Id(id))
-                .orElse(Collections.emptyList());
-    }
-
-    public Collection<StatisticalUnit> getUnitsByZone(@NotNull WorkspaceZone zone) {
-        return Optional.of(zone).map(z -> this.getUnitsByZone(z.getId()))
-                .orElse(Collections.emptyList());
-    }
-
     public StatisticalUnit getUnit(@NotNull Long id) {
         return Optional.of(id).filter(il -> il != 0)
                 .map(il -> this.statisticalUnitRepository.findById(il).orElse(null))
@@ -94,43 +80,52 @@ public class StatisticalUnitService {
 
     /**
      * Эта функция опрашивает камеру и при наличии изображения, отправляет его в когнитивный сервис "custom vision"
-     * после получения результатов от когнетивного сервиса она сохраняет полученные результаты в БД как объекты
+     * после получения результатов от когнетивного сервиса она сохраняет полученный результат в БД как объект
      * StatisticalUnit {@link StatisticalUnit}
      *
      * @param camera - объект класса {@link Camera}, объект не должен быть {@literal null}
-     * @return возвращает статистику по полученных от когнетивного сервиса в сиде коллекции объектов {@link StatisticalUnit}
+     * @return возвращает статистичискую единицу с полученными от когнетивного сервиса  данными в виде объекта {@link StatisticalUnit}
      */
-    public Collection<StatisticalUnit> saveUnitFromCamera(@NotNull Camera camera) {
-        Collection<StatisticalUnit> result = Collections.emptyList();
+    public StatisticalUnit saveUnitFromCamera(@NotNull Camera camera) {
+        StatisticalUnit result = null;
         BufferedImage bi = cameraService.getImageFromCamera(camera);
         if (bi != null) {
-            //TODO: Добавить инмпорт значений offset и maxCol из properties
-            MiddleStructure structure = imageUtil.generateUnionImage(bi, toZones(camera.getZones()), offset, colNum);
+            Optional<Camera> opCam = Optional.of(camera);
+            MiddleStructure structure = opCam
+                    .filter(Camera::isUseZone)
+                    .map(cam -> imageUtil.generateUnionImage(bi, toZones(cam.getZones()), offset, colNum))
+                    .orElseGet(() -> new MiddleStructure().withSource(bi).withDest(bi));
+
             List<PredictionZone> predictionZones = visionService.getPrediction(structure.getDest())
                     .stream().filter(predictionZone -> predictionZone.getProbability() > this.predictionTrashold)
                     .collect(Collectors.toList());
 
-            List<PredictionZone> sourcePredictionZones = toSourcesPredictionZones(predictionZones, structure);
+            long count = opCam.filter(Camera::isUseZone)
+                    .map(cam ->
+                            cam.getZones().stream().filter(zone ->
+                                    toSourcesPredictionZones(predictionZones, structure).stream()
+                                            .anyMatch(pzone -> imageUtil.getIoU(zone, pzone) > iouTrashold)).count())
+                    .orElseGet(() -> (long) predictionZones.size());
 
             if (withCamImage) {
                 try {
                     CamImage camImage = new CamImage();
                     camImage.setCameraId(camera.getId());
                     camImage.setPredictions(predictionZones);
+                    camImage.setUseZone(camera.isUseZone());
                     camImage.setContentImage(imageUtil.bImageToJpegBase64(structure.getSource()));
-                    camImage.setUnionContentImage(imageUtil.bImageToJpegBase64(structure.getDest()));
-                    camImageService.saveCamImage(camImage);
+                    if(camera.isUseZone()){
+                        camImage.setUnionContentImage(imageUtil.bImageToJpegBase64(structure.getDest()));
+                    }
+                    camImageService.addCamImage(camImage);
                 } catch (IOException e) {
                     log.warning(e.getMessage());
                 }
             }
 
-            result = statisticalUnitRepository.saveAll(camera.getZones().stream()
-                    .map(zone -> new StatisticalUnit()
-                            .withCamera(camera)
-                            .withBusy(sourcePredictionZones.stream().anyMatch(pzone ->
-                                    imageUtil.getIoU(zone, pzone) > iouTrashold))
-                            .withZone(zone)).collect(Collectors.toList()));
+            result = statisticalUnitRepository.save(new StatisticalUnit()
+                    .withCamera(camera)
+                    .withCount(count).withDate(new Date()));
         }
         return result;
     }

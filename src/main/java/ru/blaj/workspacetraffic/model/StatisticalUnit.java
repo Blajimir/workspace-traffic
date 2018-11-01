@@ -21,12 +21,15 @@ public class StatisticalUnit {
     @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
     @JsonIdentityReference(alwaysAsId = true)
     private Camera camera;
-    @ManyToOne
+    /*@ManyToOne
     @JoinColumn(name = "zone_id")
     @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
     @JsonIdentityReference(alwaysAsId = true)
     private WorkspaceZone zone;
-    private boolean busy;
+    private boolean busy;*/
+    private Long count;
+    @Column(name = "use_zone")
+    private boolean useZone;
     @Temporal(TemporalType.TIMESTAMP)
     private Date date;
 
@@ -40,13 +43,8 @@ public class StatisticalUnit {
         return this;
     }
 
-    public StatisticalUnit withZone(WorkspaceZone zone){
-        this.zone = zone;
-        return this;
-    }
-
-    public StatisticalUnit withBusy(boolean busy){
-        this.busy = busy;
+    public StatisticalUnit withCount(Long count){
+        this.count = count;
         return this;
     }
 

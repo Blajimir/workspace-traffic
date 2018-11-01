@@ -4,18 +4,14 @@ import ru.blaj.workspacetraffic.model.Camera;
 import ru.blaj.workspacetraffic.model.StatisticalUnit;
 import ru.blaj.workspacetraffic.model.WorkspaceZone;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class UtilTest {
     public static Collection<StatisticalUnit> buildUnits(Camera camera){
         return camera.getZones().stream().map(zone -> new StatisticalUnit()
                 .withCamera(camera)
-                .withZone(zone)
-                .withBusy(Math.random()>0.5)
+                .withCount(new Random().nextLong())
                 .withDate(new Date())).collect(Collectors.toList());
     }
 

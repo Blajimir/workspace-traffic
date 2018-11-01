@@ -57,4 +57,20 @@ public class MiddleStructure {
     public MiddleStructureUnit getByZone(Zone zone){
         return this.unionZones.stream().filter(unit -> unit.getSourceZone() == zone).findFirst().orElse(null);
     }
+
+    public MiddleStructure withUnionZones(Set<MiddleStructureUnit> unionZones){
+        this.unionZones = unionZones;
+        return this;
+    }
+
+    public MiddleStructure withSource(BufferedImage source){
+        this.source = source;
+        return this;
+    }
+
+    public MiddleStructure withDest(BufferedImage dest){
+        this.dest = dest;
+        return this;
+    }
+
 }

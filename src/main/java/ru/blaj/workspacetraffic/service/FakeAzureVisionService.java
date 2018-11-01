@@ -13,12 +13,14 @@ import ru.blaj.workspacetraffic.util.ImageUtil;
 import javax.annotation.PostConstruct;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 @Service
 @Profile("test")
 @Log
-public class FakeAzureVisionService implements VisionService{
+public class FakeAzureVisionService implements VisionService {
 
     @Autowired
     private CameraService cameraService;
@@ -26,11 +28,15 @@ public class FakeAzureVisionService implements VisionService{
     @Autowired
     private ImageUtil imageUtil;
 
+    private Random random;
+
     private boolean busy;
 
     @PostConstruct
-    private void init(){
+    private void init() {
         generateBusy();
+
+        random = new Random();
 
         Camera camera = new Camera();
         camera.setUrl("http://220.240.123.205/mjpg/video.mjpg");
@@ -59,18 +65,41 @@ public class FakeAzureVisionService implements VisionService{
         zones.add(zone);
 
         camera.setZones(zones);
-
-        cameraService.saveCamera(camera);
+        camera = cameraService.addCamera(camera);
+        assert camera.getId() != null;
+        log.info(String.format("Post process saving camera for fake azure vision service: {id: %d, url: %s}",
+                camera.getId(), camera.getUrl()));
     }
 
     @Override
     public List<PredictionZone> getPrediction(BufferedImage bi) {
-        return null;
+        List<PredictionZone> predictions = new ArrayList<>();
+        switch (this.random.nextInt(3)) {
+            case 0:
+                predictions = Collections.emptyList();
+                break;
+            case 1:
+                predictions.add(new PredictionZone().withLeft(0.0).withTop(0.0)
+                        .withHeight(0.5).withWidth(0.5)
+                        .withTag("busy").withProbability(0.6 * 100.0));
+                break;
+            case 2:
+                predictions.add(new PredictionZone().withLeft(0.0).withTop(0.0)
+                        .withHeight(0.4).withWidth(0.5)
+                        .withTag("busy").withProbability(0.6 * 100.0));
+                predictions.add(new PredictionZone().withLeft(0.5).withTop(0.0)
+                        .withHeight(0.5).withWidth(0.5)
+                        .withTag("busy").withProbability(0.3 * 100.0));
+                break;
+
+        }
+        log.info(predictions.toString());
+        return predictions;
     }
 
     @Scheduled(cron = "0 */20 * * * ?")
-    public void generateBusy(){
+    public void generateBusy() {
         this.busy = Math.random() > 0.5;
-        log.info("Change busy value to "+this.busy);
+        log.info("Change busy value to " + this.busy);
     }
 }

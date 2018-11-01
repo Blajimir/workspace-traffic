@@ -22,6 +22,9 @@ public class Camera {
     @SequenceGenerator(name="camera_id_seq", sequenceName = "camera_id_seq", allocationSize = 1)
     private Long id;
     private String url;
-    @OneToMany(mappedBy = "camera", cascade = CascadeType.ALL, orphanRemoval = true)
+    private boolean active;
+    @Column(name = "use_zone")
+    private boolean useZone;
+    @OneToMany(mappedBy = "camera", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<WorkspaceZone> zones;
 }
