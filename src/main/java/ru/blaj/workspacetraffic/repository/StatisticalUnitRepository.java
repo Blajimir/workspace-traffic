@@ -7,4 +7,5 @@ import java.util.Collection;
 
 public interface StatisticalUnitRepository extends JpaRepository<StatisticalUnit, Long> {
     Collection<StatisticalUnit> findAllByCamera_Id(Long id);
+    void deleteAllByCamera_Id(Long id);
 }

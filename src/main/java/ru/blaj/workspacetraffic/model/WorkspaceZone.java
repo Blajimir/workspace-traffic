@@ -26,7 +26,7 @@ public class WorkspaceZone extends Zone{
     private String name;
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "camera_id")
+    @JoinColumn(name = "camera_id", foreignKey = @ForeignKey(name = "none"))
     private Camera camera;
 
     public WorkspaceZone withName(String name) {

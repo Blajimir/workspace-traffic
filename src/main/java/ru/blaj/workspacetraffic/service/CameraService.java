@@ -6,9 +6,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import ru.blaj.workspacetraffic.model.Camera;
 import ru.blaj.workspacetraffic.model.WorkspaceZone;
+import ru.blaj.workspacetraffic.repository.CamImageRepository;
 import ru.blaj.workspacetraffic.repository.CameraRepository;
+import ru.blaj.workspacetraffic.repository.StatisticalUnitRepository;
 import ru.blaj.workspacetraffic.util.ImageUtil;
 
+import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -26,11 +29,17 @@ import java.util.Optional;
 @Log
 public class CameraService {
     private CameraRepository cameraRepository;
+    private StatisticalUnitRepository unitRepository;
+    private CamImageRepository camImageRepository;
     private ImageUtil imageUtil;
 
     @Autowired
-    public CameraService(CameraRepository cameraRepository, ImageUtil imageUtil) {
+    public CameraService(CameraRepository cameraRepository,
+                         StatisticalUnitRepository unitRepository,
+                         CamImageRepository camImageRepository, ImageUtil imageUtil) {
         this.cameraRepository = cameraRepository;
+        this.camImageRepository = camImageRepository;
+        this.unitRepository = unitRepository;
         this.imageUtil = imageUtil;
     }
 
@@ -48,6 +57,8 @@ public class CameraService {
                     .filter(zone -> zone.getCamera()==null)
                     .forEach(zone -> zone.setCamera(camera)));
             result = this.cameraRepository.save(camera);
+        }else{
+            throw new IllegalArgumentException(" Unavailable Url for Camera");
         }
         return result;
     }
@@ -71,11 +82,14 @@ public class CameraService {
     }
 
     public void deleteCamera(@NotNull Camera camera) {
-        this.cameraRepository.delete(camera);
+        this.deleteCamera(camera.getId());
     }
 
+    @Transactional
     public void deleteCamera(@NotNull Long id){
         if(this.cameraRepository.existsById(id)){
+            this.unitRepository.deleteAllByCamera_Id(id);
+            this.camImageRepository.deleteAllByCameraId(id);
             this.cameraRepository.deleteById(id);
         }
     }

@@ -17,7 +17,7 @@ public class StatisticalUnit {
     @SequenceGenerator(name = "statistics_id_seq", sequenceName = "statistics_id_seq", allocationSize = 1)
     private Long id;
     @ManyToOne
-    @JoinColumn(name = "camera_id")
+    @JoinColumn(name = "camera_id", foreignKey = @ForeignKey(name = "none"))
     @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
     @JsonIdentityReference(alwaysAsId = true)
     private Camera camera;

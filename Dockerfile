@@ -1,4 +1,4 @@
-FROM maven:3.5.4-jdk-8-alpine
+FROM maven:3.6.0-jdk-8
 RUN mkdir /workspace-traffic
 WORKDIR /home/ec2-user
 COPY ./workspace-traffic-0.0.1-SNAPSHOT.jar /workspace-traffic
