@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import ru.blaj.workspacetraffic.model.PredictionZone;
 import ru.blaj.workspacetraffic.util.ImageUtil;
 
@@ -53,7 +54,7 @@ public class AzureVisionService implements VisionService{
             log.warning(e.getMessage());
             e.printStackTrace();
         }
-
+        RestTemplate template = new RestTemplate();
         return result;
     }
 
