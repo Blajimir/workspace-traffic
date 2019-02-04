@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  * @author Alesandr Kovalev aka blajimir
  * */
 @Service
-@Profile("!test")
+@Profile("custom-vision")
 @Log
 public class AzureVisionService implements VisionService{
     @Autowired

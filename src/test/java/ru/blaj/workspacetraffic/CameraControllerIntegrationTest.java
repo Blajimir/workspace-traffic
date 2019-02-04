@@ -15,6 +15,14 @@ import org.springframework.web.client.RestTemplate;
 import ru.blaj.workspacetraffic.model.Camera;
 import ru.blaj.workspacetraffic.service.CameraService;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Map;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @Log

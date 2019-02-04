@@ -3,21 +3,23 @@ package ru.blaj.workspacetraffic;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
+import org.h2.util.IOUtils;
 import org.junit.Test;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.*;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 import ru.blaj.workspacetraffic.model.*;
 import ru.blaj.workspacetraffic.service.AzureVisionService;
 import ru.blaj.workspacetraffic.util.ImageUtil;
-import sun.misc.IOUtils;
 import sun.nio.ch.IOUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.ByteBuffer;
@@ -221,6 +223,41 @@ public class TrafficTest {
         double steps = 1575.0 / 100.0;
         double percent = 236.0 / steps;
         System.out.println(String.format("%.3f", percent));
+    }
+
+    @Test
+    public void replaceTest() {
+        String xmlStr = "<test><str>Metro C&C</str></test>";
+        System.out.println(xmlStr.replaceAll( "&([^;]+(?!(?:\\w|;)))", "&amp;$1" ));
+    }
+
+
+    @Test
+    public void getOwnServiceTest() throws IOException {
+        RestTemplate restTemplate = new RestTemplate();
+        //BufferedImage bi = ImageIO.read(new URL("https://www.evernote.com/shard/s212/sh/71381176-b9dd-40e8-aae6-55297c3a9eee/d0bae028b6a4c3c0/res/3e6d4a8d-2116-45e8-aedc-757432cc191f/"));
+        //BufferedImage bi = ImageIO.read(new File("C:\\Users\\a.a.kovalev\\Pictures\\peoples.png"));
+       // ByteArrayOutputStream baos = new ByteArrayOutputStream();
+       // ImageIO.write(bi, "png", baos);
+        File f = new File("C:\\Users\\a.a.kovalev\\Pictures\\peoples.png");
+        InputStream is = new FileInputStream(f);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        MultiValueMap<String, Object> multipart = new LinkedMultiValueMap<>();
+
+        HttpHeaders imgHeader = new HttpHeaders();
+        imgHeader.setContentType(MediaType.IMAGE_PNG);
+        //imgHeader.add("Content-Type", "image/png");
+        //imgHeader.add("Content-Disposition", "form-data; name=\"file\"; filename=\"peoples.png\"");
+        imgHeader.setContentDispositionFormData("file", "1.png");
+        HttpEntity<ByteArrayResource> imgPart = new HttpEntity<>( new ByteArrayResource(Files.readAllBytes(f.toPath())), imgHeader);
+
+        multipart.add("file", imgPart);
+        HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(multipart, headers);
+        ResponseEntity<Map> response = restTemplate.exchange(
+                "http://127.0.0.1:8087/api/predict",
+                HttpMethod.POST,entity, Map.class);
+        System.out.println(String.format("%nTest result:%n%s%n", response.getBody()));
     }
 
 }
