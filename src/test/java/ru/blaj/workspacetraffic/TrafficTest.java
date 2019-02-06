@@ -13,6 +13,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import ru.blaj.workspacetraffic.model.*;
 import ru.blaj.workspacetraffic.service.AzureVisionService;
+import ru.blaj.workspacetraffic.service.OwnVisionService;
 import ru.blaj.workspacetraffic.util.ImageUtil;
 import sun.nio.ch.IOUtil;
 
@@ -235,12 +236,12 @@ public class TrafficTest {
     @Test
     public void getOwnServiceTest() throws IOException {
         RestTemplate restTemplate = new RestTemplate();
-        //BufferedImage bi = ImageIO.read(new URL("https://www.evernote.com/shard/s212/sh/71381176-b9dd-40e8-aae6-55297c3a9eee/d0bae028b6a4c3c0/res/3e6d4a8d-2116-45e8-aedc-757432cc191f/"));
+        BufferedImage bi = ImageIO.read(new URL("https://www.evernote.com/shard/s212/sh/71381176-b9dd-40e8-aae6-55297c3a9eee/d0bae028b6a4c3c0/res/3e6d4a8d-2116-45e8-aedc-757432cc191f/"));
         //BufferedImage bi = ImageIO.read(new File("C:\\Users\\a.a.kovalev\\Pictures\\peoples.png"));
-       // ByteArrayOutputStream baos = new ByteArrayOutputStream();
-       // ImageIO.write(bi, "png", baos);
-        File f = new File("C:\\Users\\a.a.kovalev\\Pictures\\peoples.png");
-        InputStream is = new FileInputStream(f);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(bi, "png", baos);
+        //File f = new File("C:\\Users\\a.a.kovalev\\Pictures\\peoples.png");
+        //InputStream is = new FileInputStream(f);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         MultiValueMap<String, Object> multipart = new LinkedMultiValueMap<>();
@@ -250,14 +251,17 @@ public class TrafficTest {
         //imgHeader.add("Content-Type", "image/png");
         //imgHeader.add("Content-Disposition", "form-data; name=\"file\"; filename=\"peoples.png\"");
         imgHeader.setContentDispositionFormData("file", "1.png");
-        HttpEntity<ByteArrayResource> imgPart = new HttpEntity<>( new ByteArrayResource(Files.readAllBytes(f.toPath())), imgHeader);
+        HttpEntity<ByteArrayResource> imgPart = new HttpEntity<>( new ByteArrayResource(baos.toByteArray()), imgHeader);
 
         multipart.add("file", imgPart);
         HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(multipart, headers);
         ResponseEntity<Map> response = restTemplate.exchange(
                 "http://127.0.0.1:8087/api/predict",
                 HttpMethod.POST,entity, Map.class);
-        System.out.println(String.format("%nTest result:%n%s%n", response.getBody()));
+        OwnVisionService visionService = new OwnVisionService();
+        Map<String, Object> map = response.getBody();
+        System.out.println(String.format("%nTest result:%n%s%n", map));
+        List<PredictionZone> zones = visionService.getPredictionZoneFromMap(map);
+        System.out.println(String.format("%nPredictionZone result:%n%s%n", zones));
     }
-
 }
