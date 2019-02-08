@@ -14,15 +14,11 @@ import ru.blaj.workspacetraffic.model.Zone;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Base64;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Log
@@ -35,17 +31,30 @@ public class ImageUtil {
     public BufferedImage getImageFromVideo(String surl, String format) throws IOException {
         BufferedImage result = null;
         Optional<HttpURLConnection> ohuc = tryConnection(surl);
+        Optional<InputStream> ois = Optional.empty();
         if (ohuc.isPresent()) {
-            Java2DFrameConverter converter = new Java2DFrameConverter();
-            FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(ohuc.get().getInputStream());
-            if (!StringUtils.isEmpty(format)) {
-                grabber.setFormat("mpjpeg");
+            if(ohuc.get().getContentType().toLowerCase().contains("vnd.apple.mpegurl")||
+                    ohuc.get().getContentType().toLowerCase().contains("mpegurl")){
+                BufferedReader br = new BufferedReader(new InputStreamReader(ohuc.get().getInputStream()));
+                ohuc = tryConnection(surl.replace(Arrays.stream(surl.split("/")).reduce((s, s2) -> s2).orElse("")
+                        , br.lines().reduce((s, s2) -> s2).orElse("")));
+                if(ohuc.isPresent()){
+                    ois = Optional.of(ohuc.get().getInputStream());
+                }
+            }else{
+                ois = Optional.of(ohuc.get().getInputStream());
             }
+        }
+        if(ois.isPresent()){
+            Java2DFrameConverter converter = new Java2DFrameConverter();
+            FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(ois.get());
+            /*if (!StringUtils.isEmpty(format)) {
+                grabber.setFormat("mpjpeg");
+            }*/
             grabber.start();
-            Frame frame = grabber.grab();
+            Frame frame = grabber.grabImage();
             if (frame != null) {
                 result = converter.convert(frame);
-                //ImageIO.write(bImage, "jpeg", new File("c:\\Programming\\temp\\TestMp4ToJpeg\\2.jpeg"));
             }
             grabber.stop();
             ohuc.get().disconnect();

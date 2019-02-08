@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Profile("own-vision")
@@ -26,6 +27,8 @@ import java.util.Map;
 public class OwnVisionService implements VisionService {
     @Value("${app.own-tf-od-service.url}")
     private String address;
+    @Value("${app.filter-tag}")
+    private String tagFilter;
 
     @Override
     public List<PredictionZone> getPrediction(BufferedImage bi) {
@@ -46,7 +49,8 @@ public class OwnVisionService implements VisionService {
             ResponseEntity<Map<String,Object>> response = restTemplate.exchange(
                     address.concat("/api/predict"),
                     HttpMethod.POST,entity, new ParameterizedTypeReference<Map<String,Object>>(){});
-            result = this.getPredictionZoneFromMap(response.getBody());
+            result = this.getPredictionZoneFromMap(response.getBody()).stream()
+                    .filter(p -> p.getTag().toLowerCase().equals(tagFilter)).collect(Collectors.toList());
         } catch (IOException e) {
             log.warning(e.getMessage());
             e.printStackTrace();

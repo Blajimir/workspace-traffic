@@ -1,6 +1,10 @@
 package ru.blaj.workspacetraffic.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.blaj.workspacetraffic.model.CamImage;
 import ru.blaj.workspacetraffic.repository.CamImageRepository;
@@ -41,7 +45,12 @@ public class CamImageService {
     public Collection<CamImage> getAllCamImage(){
         return Collections.unmodifiableCollection(this.camImageRepository.findAll());
     }
-
+    public Page<CamImage> getAllByCameraId(@NotNull Long id, int page, int size){
+        Page<CamImage> result = null;
+        Pageable pageable = PageRequest.of(page,size, Sort.by("timestamp"));
+        result = camImageRepository.findAllByCameraId(id, pageable);
+        return result;
+    }
     public void deleteCamImage(@NotNull CamImage camImage) {
         this.camImageRepository.delete(camImage);
     }

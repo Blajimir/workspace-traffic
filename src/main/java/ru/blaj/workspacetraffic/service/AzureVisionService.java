@@ -35,7 +35,7 @@ public class AzureVisionService implements VisionService{
     private String predictionKey;
     @Value("${app.azure.custom-vision.project-id}")
     private UUID projectId;
-    @Value("${app.azure.custom-vision.filter-tag}")
+    @Value("${app.filter-tag}")
     private String tagFilter;
     //TODO: дописать функцию!!!
     @Override

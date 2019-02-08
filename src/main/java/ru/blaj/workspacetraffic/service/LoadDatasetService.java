@@ -35,7 +35,7 @@ public class LoadDatasetService {
     private String trainingKey;
     @Value("${app.azure.custom-vision.project-id}")
     private String projectId;
-    @Value("${app.azure.custom-vision.filter-tag}")
+    @Value("${app.filter-tag}")
     private String tagFilter;
     private String tagFilterId;
     private RestTemplate restTemplate;

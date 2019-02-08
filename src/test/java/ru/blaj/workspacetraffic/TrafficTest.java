@@ -22,6 +22,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
@@ -263,5 +264,19 @@ public class TrafficTest {
         System.out.println(String.format("%nTest result:%n%s%n", map));
         List<PredictionZone> zones = visionService.getPredictionZoneFromMap(map);
         System.out.println(String.format("%nPredictionZone result:%n%s%n", zones));
+    }
+
+    @Test
+    public void testM3U8Fmt() throws IOException {
+        String surl = "https://videos3.earthcam.com/fecnetwork/14320.flv/chunklist_w58895686.m3u8";
+        URL url = new URL(surl);
+        HttpURLConnection huc = (HttpURLConnection) url.openConnection();
+        System.out.println("Content-Type: "+huc.getContentType());
+        if(huc.getContentType().toLowerCase().contains("vnd.apple.mpegurl")||
+                huc.getContentType().toLowerCase().contains("mpegurl")){
+            BufferedReader br = new BufferedReader(new InputStreamReader(huc.getInputStream()));
+            System.out.println(surl.replace(Arrays.stream(surl.split("/")).reduce((s, s2) -> s2).orElse("")
+                    , br.lines().reduce((s, s2) -> s2).orElse("")));
+        }
     }
 }
