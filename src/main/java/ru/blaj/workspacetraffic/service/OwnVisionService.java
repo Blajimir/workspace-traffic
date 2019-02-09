@@ -65,7 +65,7 @@ public class OwnVisionService implements VisionService {
         predictions.forEach(oMap -> {
             @SuppressWarnings("unchecked")
             Map<String, Double> region = (Map<String, Double>) oMap.get("Region");
-            PredictionZone item = new PredictionZone().withProbability((double) oMap.get("Probability"))
+            PredictionZone item = new PredictionZone().withProbability((double) oMap.get("Probability")*100)
                     .withLeft(region.get("Left")).withTop(region.get("Top")).withWidth(region.get("Width"))
                     .withHeight(region.get("Height")).withTag((String)oMap.get("TagName"));
             result.add(item);
