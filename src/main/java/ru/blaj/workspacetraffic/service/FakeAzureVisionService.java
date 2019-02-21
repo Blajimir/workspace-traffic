@@ -17,6 +17,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Класс - сервис нужет для тестирование сервиса, эмулирует работу конетивного сервиса( @see{@link Camera} )
+ *
+ * @author Alesandr Kovalev aka blajimir
+ */
+
 @Service
 @Profile("test")
 @Log

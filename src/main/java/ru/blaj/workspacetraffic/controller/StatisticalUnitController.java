@@ -28,9 +28,11 @@ public class StatisticalUnitController {
     }
 
     @GetMapping(path = "/image/{id}")
-    public Map<String,Object> getPaginationCamImages(@RequestParam("page") int page, @RequestParam("size") int size,
+    public Map<String,Object> getPaginationCamImages(@RequestParam(name = "startDate", required = false) String start,
+                                                     @RequestParam(name = "endDate", required = false) String end,
+                                                     @RequestParam("page") int page, @RequestParam("size") int size,
                                                      @PathVariable("id") Long id){
-        Page<CamImage> camImagePage = camImageService.getAllByCameraId(id, page, size);
+        Page<CamImage> camImagePage = camImageService.getAllByCameraId(id, start, end, page, size);
         HashMap<String, Object> mapBody = new HashMap<>();
         mapBody.put("logs", camImagePage.stream().collect(Collectors.toList()));
         mapBody.put("totalPages", camImagePage.getTotalPages());

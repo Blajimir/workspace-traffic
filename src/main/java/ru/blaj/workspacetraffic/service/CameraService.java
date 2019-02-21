@@ -24,7 +24,7 @@ import java.util.Optional;
  *
  * @author Alesandr Kovalev aka blajimir
  */
-
+//TODO: добавить javadoc
 @Service
 @Log
 public class CameraService {
