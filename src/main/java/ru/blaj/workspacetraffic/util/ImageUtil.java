@@ -12,6 +12,7 @@ import ru.blaj.workspacetraffic.model.MiddleStructure;
 import ru.blaj.workspacetraffic.model.Zone;
 
 import javax.imageio.ImageIO;
+import javax.validation.constraints.NotNull;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -33,14 +34,8 @@ public class ImageUtil {
         Optional<HttpURLConnection> ohuc = tryConnection(surl);
         Optional<InputStream> ois = Optional.empty();
         if (ohuc.isPresent()) {
-            if(ohuc.get().getContentType().toLowerCase().contains("vnd.apple.mpegurl")||
-                    ohuc.get().getContentType().toLowerCase().contains("mpegurl")){
-                BufferedReader br = new BufferedReader(new InputStreamReader(ohuc.get().getInputStream()));
-                ohuc = tryConnection(surl.replace(Arrays.stream(surl.split("/")).reduce((s, s2) -> s2).orElse("")
-                        , br.lines().reduce((s, s2) -> s2).orElse("")));
-                if(ohuc.isPresent()){
-                    ois = Optional.of(ohuc.get().getInputStream());
-                }
+            if(this.isLinkFromM3U8(ohuc.get())){
+                ois = getLinkFromM3U8(surl, ohuc.get());
             }else{
                 ois = Optional.of(ohuc.get().getInputStream());
             }
@@ -62,6 +57,26 @@ public class ImageUtil {
         return result;
     }
 
+    public boolean isLinkFromM3U8(HttpURLConnection huc){
+        return Optional.of(huc).filter(vhuc -> vhuc.getContentType().toLowerCase().contains("vnd.apple.mpegurl")||
+                vhuc.getContentType().toLowerCase().contains("mpegurl")).isPresent();
+    }
+
+    public Optional<InputStream> getLinkFromM3U8(String surl , @NotNull HttpURLConnection huc) throws IOException {
+        Optional<InputStream> result = Optional.empty();
+        BufferedReader br = new BufferedReader(new InputStreamReader(huc.getInputStream()));
+        huc.disconnect();
+        Optional<HttpURLConnection> ohuc = tryConnection(surl.replace(Arrays.stream(surl.split("/")).reduce((s, s2) -> s2).orElse("")
+                , br.lines().reduce((s, s2) -> s2).orElse("")));
+        if(ohuc.isPresent()){
+            if(!this.isLinkFromM3U8(ohuc.get())){
+                result = Optional.of(ohuc.get().getInputStream());
+            }else{
+                result = this.getLinkFromM3U8(surl, ohuc.get());
+            }
+        }
+        return result;
+    }
     public Optional<HttpURLConnection> tryConnection(String surl) {
         HttpURLConnection result = null;
         try {
