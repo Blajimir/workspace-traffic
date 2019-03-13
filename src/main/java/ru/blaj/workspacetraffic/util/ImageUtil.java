@@ -35,7 +35,7 @@ public class ImageUtil {
         Optional<InputStream> ois = Optional.empty();
         if (ohuc.isPresent()) {
             if(this.isLinkFromM3U8(ohuc.get())){
-                ois = getLinkFromM3U8(surl, ohuc.get());
+                ois = this.getLinkFromM3U8(surl, ohuc.get());
             }else{
                 ois = Optional.of(ohuc.get().getInputStream());
             }
@@ -65,9 +65,9 @@ public class ImageUtil {
     public Optional<InputStream> getLinkFromM3U8(String surl , @NotNull HttpURLConnection huc) throws IOException {
         Optional<InputStream> result = Optional.empty();
         BufferedReader br = new BufferedReader(new InputStreamReader(huc.getInputStream()));
-        huc.disconnect();
         Optional<HttpURLConnection> ohuc = tryConnection(surl.replace(Arrays.stream(surl.split("/")).reduce((s, s2) -> s2).orElse("")
                 , br.lines().reduce((s, s2) -> s2).orElse("")));
+        huc.disconnect();
         if(ohuc.isPresent()){
             if(!this.isLinkFromM3U8(ohuc.get())){
                 result = Optional.of(ohuc.get().getInputStream());
