@@ -97,8 +97,8 @@ public class CamImageService {
         Date startDate = null;
         Date endDate = null;
         try {
-            startDate = sdf.parse(start);
-            endDate = sdf.parse(end);
+            startDate = start!=null?sdf.parse(start):null;
+            endDate = end!=null?sdf.parse(end):null;
         } catch (ParseException e) {
             log.warning(e.getMessage());
         }
@@ -125,7 +125,7 @@ public class CamImageService {
             c.set(1985,1,1);
             return c.getTime();
         });
-        Date insertEndDate = Optional.ofNullable(startDate).orElseGet(() -> {
+        Date insertEndDate = Optional.ofNullable(endDate).orElseGet(() -> {
             Calendar c = Calendar.getInstance();
             c.set(2100,1,1);
             return c.getTime();

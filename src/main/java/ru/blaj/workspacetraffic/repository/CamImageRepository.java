@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface CamImageRepository extends JpaRepository<CamImage, Long> {
     void deleteAllByCameraId(Long id);
-    @Query("select img from CamImage as img where img.id = :id and img.timestamp >= :start and img.timestamp <= :end")
+    @Query("select img from CamImage as img where img.cameraId = :id and img.timestamp >= :start and img.timestamp <= :end")
     Page<CamImage> findAllByCameraId(@Param("id") Long id, @Param("start") Date startDate,
                                      @Param("end") Date endDate, Pageable pageable);
 }

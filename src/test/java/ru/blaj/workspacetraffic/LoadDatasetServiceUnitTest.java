@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@ActiveProfiles("testdb")
+@ActiveProfiles({"testdb","test"})
 public class LoadDatasetServiceUnitTest {
     @Autowired
     LoadDatasetService loadDatasetService;

@@ -1,5 +1,6 @@
 package ru.blaj.workspacetraffic;
 
+import ru.blaj.workspacetraffic.model.CamImage;
 import ru.blaj.workspacetraffic.model.Camera;
 import ru.blaj.workspacetraffic.model.StatisticalUnit;
 import ru.blaj.workspacetraffic.model.WorkspaceZone;
