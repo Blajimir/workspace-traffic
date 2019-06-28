@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import ru.blaj.workspacetraffic.model.CamImage;
 import ru.blaj.workspacetraffic.repository.CamImageRepository;
 
+import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -153,5 +154,22 @@ public class CamImageService {
         if (this.camImageRepository.existsById(id)) {
             this.camImageRepository.deleteById(id);
         }
+    }
+
+    /**
+     * Вспомогательный метод для удаления половины логов (@link {@link CamImage}), необходим для работы на тест-сервере
+     * с ограниченным объемом хранилища, метод удаляет половину накопленных логов
+     *
+     */
+    @Transactional
+    public void deleteHalfOfCamImages(){
+        long halfId = camImageRepository.getMaxId() - (camImageRepository.count()/2);
+        if(halfId>0){
+            camImageRepository.deleteAllByIdLessThanEqual(halfId);
+        }
+    }
+
+    public long getCamImagesCount(){
+        return camImageRepository.count();
     }
 }

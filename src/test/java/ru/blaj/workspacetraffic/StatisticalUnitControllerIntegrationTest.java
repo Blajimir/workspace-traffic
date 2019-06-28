@@ -39,7 +39,7 @@ public class StatisticalUnitControllerIntegrationTest {
 
         HttpHeaders headers = new HttpHeaders();
 
-        HttpEntity<String> entity = new HttpEntity<String>(null, headers);
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
         ResponseEntity<String> response = restTemplate.exchange(
                 UtilTest.getURL("/api/statics/{id}"),
                 HttpMethod.GET,entity,String.class,camera.getId());

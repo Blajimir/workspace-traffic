@@ -10,6 +10,7 @@ import javax.persistence.*;
 /**
  * Класс - модель Зон, зоны нужны для того чтобы отметить активные зоны на изображениях получаемых с камер
  * @author Alesandr Kovalev aka blajimir
+ *
  * */
 
 @Entity

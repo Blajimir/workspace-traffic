@@ -10,6 +10,7 @@ import javax.persistence.Embeddable;
 /**
  * Класс - модель предсказанных зон, эти объекты хранят данные полученные от когнитивного сервиса, хранится в БД для
  * анализа качества работы сервиса
+ *
  * @author Alesandr Kovalev aka blajimir
  * */
 @Embeddable

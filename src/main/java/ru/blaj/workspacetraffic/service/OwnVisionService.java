@@ -21,6 +21,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Реализация класса-сервиса для собственного REST-сервиса, который реализует TensorFlow Object Detection API
+ */
 @Service
 @Profile("own-vision")
 @Log
@@ -50,7 +53,7 @@ public class OwnVisionService implements VisionService {
                     address.concat("/api/predict"),
                     HttpMethod.POST,entity, new ParameterizedTypeReference<Map<String,Object>>(){});
             result = this.getPredictionZoneFromMap(response.getBody()).stream()
-                    .filter(p -> p.getTag().toLowerCase().equals(tagFilter)).collect(Collectors.toList());
+                    .filter(p -> tagFilter.contains(p.getTag().toLowerCase())).collect(Collectors.toList());
         } catch (IOException e) {
             log.warning(e.getMessage());
             e.printStackTrace();

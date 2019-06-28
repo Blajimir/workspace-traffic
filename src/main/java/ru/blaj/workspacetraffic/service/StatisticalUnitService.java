@@ -38,19 +38,21 @@ public class StatisticalUnitService {
     private int offset;
     @Value("${app.union-image.colums}")
     private int colNum;
+    @Value("${app.filter-tag}")
+    private String tagPattern;
 
     /*/@Autowired
     public StatisticalUnitService(StatisticalUnitRepository statisticalUnitRepository) {
         this.statisticalUnitRepository = statisticalUnitRepository;
-    }//*/
+    }//
 
     public Collection<StatisticalUnit> getAllUnits() {
         return Collections.unmodifiableCollection(this.statisticalUnitRepository.findAll());
-    }
+    }*/
 
     public Collection<StatisticalUnit> getUnitsByCamera(Long id) {
         return Optional.ofNullable(id).filter(il -> il != 0)
-                .map(il -> this.statisticalUnitRepository.findAllByCamera_Id(il))
+                .map(il -> this.statisticalUnitRepository.findAllByCameraId(il))
                 .orElse(Collections.emptyList());
     }
 
@@ -90,22 +92,35 @@ public class StatisticalUnitService {
         StatisticalUnit result = null;
         BufferedImage bi = cameraService.getImageFromCamera(camera);
         if (bi != null) {
-            Optional<Camera> opCam = Optional.of(camera);
+            /*Optional<Camera> opCam = Optional.of(camera);
             MiddleStructure structure = opCam
                     .filter(Camera::isUseZone)
                     .map(cam -> imageUtil.generateUnionImage(bi, toZones(cam.getZones()), offset, colNum))
-                    .orElseGet(() -> new MiddleStructure().withSource(bi).withDest(bi));
+                    .orElseGet(() -> new MiddleStructure().withSource(bi).withDest(bi));*/
 
-            List<PredictionZone> predictionZones = visionService.getPrediction(structure.getDest())
+            List<PredictionZone> predictionZones = visionService.getPrediction(bi)
                     .stream().filter(predictionZone -> predictionZone.getProbability() > this.predictionTrashold)
                     .collect(Collectors.toList());
 
-            long count = opCam.filter(Camera::isUseZone)
+            /*long count = opCam.filter(Camera::isUseZone)
                     .map(cam ->
                             cam.getZones().stream().filter(zone ->
                                     toSourcesPredictionZones(predictionZones, structure).stream()
                                             .anyMatch(pzone -> imageUtil.getIoU(zone, pzone) > iouTrashold)).count())
-                    .orElseGet(() -> (long) predictionZones.size());
+                    .orElseGet(() -> (long) predictionZones.size());*/
+            Map<Long, DetectedObjects> detectedObjects;
+            if (camera.isUseZone()) {
+                detectedObjects = camera.getZones().stream().map(zone ->
+                        new AbstractMap.SimpleEntry<>(zone.getId(),
+                                new DetectedObjects().withDetectedList(predictionZones.stream()
+                                .filter(pZone -> imageUtil.getIoU(zone, pZone) > iouTrashold)
+                                .map(pZone -> tagToDetectedObject(pZone.getTag())).collect(Collectors.toList()))))
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            } else {
+                detectedObjects = Collections.singletonMap(0L,
+                        new DetectedObjects().withDetectedList(predictionZones.stream()
+                        .map(pZone -> tagToDetectedObject(pZone.getTag())).collect(Collectors.toList())));
+            }
 
             if (withCamImage) {
                 try {
@@ -113,10 +128,15 @@ public class StatisticalUnitService {
                     camImage.setCameraId(camera.getId());
                     camImage.setPredictions(predictionZones);
                     camImage.setUseZone(camera.isUseZone());
-                    camImage.setContentImage(imageUtil.bImageToJpegBase64(structure.getSource()));
+                    if (camera.isUseZone()) {
+                        camImage.setZones(camera.getZones().stream()
+                                .map(StatisticalWorkspaceZone::new).collect(Collectors.toList()));
+                    }
+                    camImage.setContentImage(imageUtil.bImageToJpegBase64(bi));
+                    /*camImage.setContentImage(imageUtil.bImageToJpegBase64(structure.getSource()));
                     if(camera.isUseZone()){
                         camImage.setUnionContentImage(imageUtil.bImageToJpegBase64(structure.getDest()));
-                    }
+                    }*/
                     camImageService.addCamImage(camImage);
                 } catch (IOException e) {
                     log.warning(e.getMessage());
@@ -125,14 +145,19 @@ public class StatisticalUnitService {
 
             result = statisticalUnitRepository.save(new StatisticalUnit()
                     .withCamera(camera)
-                    .withCount(count).withDate(new Date()));
+                    .withCount(detectedObjects.values().stream().flatMap(obj -> obj.getDetectedList().stream()).count())
+                    .withDetectedObjects(detectedObjects).withDate(new Date()));
         }
         return result;
     }
 
     /**
-     * вспомогательный метод для  TODO: дописать javadoc
-     * */
+     * вспомогательный метод для определения пересечение (методом IoU) между объектами найденными на изображении
+     * и Зонами омеченными для этой камеры
+     *
+     * @param predictionZones -
+     *                        TODO: дописать javadoc
+     */
     private List<PredictionZone> toSourcesPredictionZones(List<PredictionZone> predictionZones, MiddleStructure structure) {
         return structure.getUnionZones().stream().map(unit -> {
             Zone destZone = imageUtil.fromAbsoluteZone(unit.getDestAbsoluteZone(),
@@ -143,6 +168,31 @@ public class StatisticalUnitService {
                             .withTop(destZone.getTop() - pZone.getTop() + unit.getSourceZone().getTop()))
                     .collect(Collectors.toList());
         }).flatMap(Collection::stream).collect(Collectors.toList());
+    }
+
+    /**
+     * вспомогательный метод для серрилизации тэга в объект {@link DetectedObject}
+     *
+     * @param tag - тэг обнаруженного объекта полученного из конетивного сервиса
+     * @return возвращает объект {@link DetectedObject} или null, если тэг не содержит паттерна фильрруютщего тэги
+     */
+    private DetectedObject tagToDetectedObject(String tag) {
+        return Optional.ofNullable(tag).map(String::toLowerCase).filter(t -> t.contains(tagPattern))
+                .map(t -> t.split("_")).map(t -> {
+                    DetectedObject result = new DetectedObject()
+                            .withGender(DetectedGenderEnum.UNKNOWN).withAge(DetectedAgeEnum.UNKNOWN);
+                    if (t.length > 1) {
+                        result.withGender(Arrays.stream(DetectedGenderEnum.values())
+                                .filter(g -> g.getGender().equals(t[1]))
+                                .findFirst().orElse(DetectedGenderEnum.UNKNOWN));
+                    }
+                    if (t.length > 2) {
+                        result.withAge(Arrays.stream(DetectedAgeEnum.values())
+                                .filter(g -> g.getAge().equals(t[2]))
+                                .findFirst().orElse(DetectedAgeEnum.UNKNOWN));
+                    }
+                    return result;
+                }).orElse(null);
     }
 
     private List<Zone> toZones(List<WorkspaceZone> zones) {

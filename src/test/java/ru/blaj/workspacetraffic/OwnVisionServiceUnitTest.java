@@ -10,13 +10,14 @@ import ru.blaj.workspacetraffic.model.PredictionZone;
 import ru.blaj.workspacetraffic.service.VisionService;
 import ru.blaj.workspacetraffic.util.ImageUtil;
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.List;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(properties = {"spring.datasource.url=jdbc:postgresql://localhost:5432/workspace-traffic"
+        ,"spring.jpa.hibernate.ddl-auto=create-drop"
+        ,"app.own-tf-od-service.url=http://localhost:8087"})
 public class OwnVisionServiceUnitTest {
 
     @Autowired
@@ -26,12 +27,14 @@ public class OwnVisionServiceUnitTest {
 
     @Test
     public void testGetPrediction() throws IOException {
-        String url = "https://videos3.earthcam.com/fecnetwork/14320.flv/chunklist_w58895686.m3u8";
-        BufferedImage bi = imageUtil.getImageFromVideo(url, null);
+        //String url = "https://videos3.earthcam.com/fecnetwork/14320.flv/chunklist_w58895686.m3u8";
+        String url = "https://image.shutterstock.com/z/stock-photo-group-of-people-602783837.jpg";
+        BufferedImage bi = imageUtil.getImageFromVideo(url);
         Assert.assertNotNull(bi);
         List<PredictionZone> pzList  = visionService.getPrediction(bi);
         Assert.assertNotNull(pzList);
         //Assert.assertTrue(pzList.size()>0);
         System.out.println(pzList);
     }
+
 }

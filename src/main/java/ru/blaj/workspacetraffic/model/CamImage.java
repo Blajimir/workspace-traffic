@@ -28,5 +28,7 @@ public class CamImage {
     @Column(name="use_zone")
     private boolean useZone;
     @ElementCollection
+    private List<StatisticalWorkspaceZone> zones;
+    @ElementCollection
     private List<PredictionZone> predictions;
 }

@@ -23,6 +23,6 @@ public class StatisticsTask {
         cameraService.getAllCameras().stream().filter(Camera::isActive).map(unitService::saveUnitFromCamera)
                 .forEach(unit ->
                         log.info(String.format("Save unit for camera: %d  unit id: %d use zone: %b count: %d",
-                                unit.getCamera().getId(), unit.getId(), unit.isUseZone(), unit.getCount())));
+                                unit.getCameraId(), unit.getId(), unit.isUseZone(), unit.getDetectedObjects().size())));
     }
 }

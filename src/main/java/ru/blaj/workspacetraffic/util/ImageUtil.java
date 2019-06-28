@@ -6,7 +6,6 @@ import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import ru.blaj.workspacetraffic.model.AbsoluteZone;
 import ru.blaj.workspacetraffic.model.MiddleStructure;
 import ru.blaj.workspacetraffic.model.Zone;
@@ -26,10 +25,19 @@ import java.util.stream.Collectors;
 @Component
 public class ImageUtil {
     //TODO: установить таймаут через properties
-    @Value("${app.try-number-camera-conection}")
+    @Value("${app.try-number-camera-connection}")
     private int tryNum;
+    @Value("${app.timeout-camera-connection}")
+    private int timeoutConnection;
 
-    public BufferedImage getImageFromVideo(String surl, String format) throws IOException {
+    /**
+     * Эта функция позволяет получить последний кадр из видеопотока камеры по ссылке
+     *
+     * @param surl - ссылка на источних видеопотока (пока что принимает только стандартные форматы видео в
+     *             качестве прямых статичных ссылок)
+     * @return кадр в виде изображения в виде объектка {@link BufferedImage}
+     */
+    public BufferedImage getImageFromVideo(String surl) throws IOException {
         BufferedImage result = null;
         Optional<HttpURLConnection> ohuc = tryConnection(surl);
         Optional<InputStream> ois = Optional.empty();
@@ -43,9 +51,6 @@ public class ImageUtil {
         if(ois.isPresent()){
             Java2DFrameConverter converter = new Java2DFrameConverter();
             FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(ois.get());
-            /*if (!StringUtils.isEmpty(format)) {
-                grabber.setFormat("mpjpeg");
-            }*/
             grabber.start();
             Frame frame = grabber.grabImage();
             if (frame != null) {
@@ -56,15 +61,31 @@ public class ImageUtil {
         }
         return result;
     }
-
+    /**
+     * Эта вспомогательная функция позволяет определить ведет ли ссылка в виде объекта {@link HttpURLConnection}
+     * к ресурсу M3U8
+     *
+     * @param huc - ссылка на источних видеопотока виде объекта {@link HttpURLConnection}
+     * @return булевое значение
+     */
     public boolean isLinkFromM3U8(HttpURLConnection huc){
         return Optional.of(huc).filter(vhuc -> vhuc.getContentType().toLowerCase().contains("vnd.apple.mpegurl")||
                 vhuc.getContentType().toLowerCase().contains("mpegurl")).isPresent();
     }
 
+
+    /**
+     * Эта вспомогательная функция позволяет получить из ссылки {@link HttpURLConnection}
+     * к ресурсу M3U8 ссылку на конечный файл видеопотока, из плейлиста M3U8 берется последний файл.
+     * Данный алгоритм принимает первый паратетр как корневой из
+     *
+     * @param huc - ссылка на источних видеопотока виде объекта {@link HttpURLConnection}
+     * @return булевое значение
+     */
     public Optional<InputStream> getLinkFromM3U8(String surl , @NotNull HttpURLConnection huc) throws IOException {
         Optional<InputStream> result = Optional.empty();
         BufferedReader br = new BufferedReader(new InputStreamReader(huc.getInputStream()));
+        //huc.getURL().getPath()
         Optional<HttpURLConnection> ohuc = tryConnection(surl.replace(Arrays.stream(surl.split("/")).reduce((s, s2) -> s2).orElse("")
                 , br.lines().reduce((s, s2) -> s2).orElse("")));
         huc.disconnect();
@@ -82,6 +103,7 @@ public class ImageUtil {
         try {
             URL url = new URL(surl);
             HttpURLConnection huc = (HttpURLConnection) url.openConnection();
+            huc.setConnectTimeout(this.timeoutConnection);
             int tryCount = 0;
             while (huc.getResponseCode() != HttpURLConnection.HTTP_OK && tryCount < tryNum) {
                 huc.disconnect();

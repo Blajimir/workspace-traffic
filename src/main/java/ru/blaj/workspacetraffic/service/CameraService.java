@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import ru.blaj.workspacetraffic.model.Camera;
-import ru.blaj.workspacetraffic.model.WorkspaceZone;
 import ru.blaj.workspacetraffic.repository.CamImageRepository;
 import ru.blaj.workspacetraffic.repository.CameraRepository;
 import ru.blaj.workspacetraffic.repository.StatisticalUnitRepository;
@@ -88,7 +87,7 @@ public class CameraService {
     @Transactional
     public void deleteCamera(@NotNull Long id){
         if(this.cameraRepository.existsById(id)){
-            this.unitRepository.deleteAllByCamera_Id(id);
+            this.unitRepository.deleteAllByCameraId(id);
             this.camImageRepository.deleteAllByCameraId(id);
             this.cameraRepository.deleteById(id);
         }
@@ -97,7 +96,7 @@ public class CameraService {
     public BufferedImage getImageFromCamera(@NotNull Camera camera){
         BufferedImage result = null;
         try {
-            result = imageUtil.getImageFromVideo(camera.getUrl(), null);
+            result = imageUtil.getImageFromVideo(camera.getUrl());
         } catch (IOException e) {
            log.warning(e.getMessage());
         }
@@ -129,7 +128,7 @@ public class CameraService {
         boolean result = false;
         if (!StringUtils.isEmpty(camera.getUrl())) {
             try {
-                if (imageUtil.getImageFromVideo(camera.getUrl(), null) != null) {
+                if (imageUtil.getImageFromVideo(camera.getUrl()) != null) {
                     result = true;
                 }
             } catch (IOException e) {

@@ -112,7 +112,8 @@ public class LoadDatasetService {
     }
 
     private boolean setTagId(List<Map<String, Object>> tags){
-        return Optional.ofNullable(tags).orElse(Collections.emptyList()).stream().filter(objMap -> objMap.get("name").equals(this.tagFilter))
+        return Optional.ofNullable(tags).orElse(Collections.emptyList()).stream()
+                .filter(objMap -> objMap.get("name").toString().toLowerCase().contains(this.tagFilter))
                 .findFirst().map(objMap -> {
                     tagFilterId = (String)objMap.get("id");
                     return true;
