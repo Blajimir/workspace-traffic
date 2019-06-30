@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.IntStream;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(properties = {"spring.datasource.url=jdbc:postgresql://localhost:5432/workspace-traffic"
@@ -62,6 +63,7 @@ public class StatisticalUnitServiceUnitTest {
         System.out.println(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(unit));
         System.out.println("----------");
     }
+
     @Test
     public void testDeleteCameraAfterSaveStatisticalUnit() throws JsonProcessingException {
         Camera camera = new Camera();

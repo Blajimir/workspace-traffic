@@ -3,6 +3,10 @@ package ru.blaj.workspacetraffic.service;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.blaj.workspacetraffic.model.*;
 import ru.blaj.workspacetraffic.repository.StatisticalUnitRepository;
@@ -54,6 +58,11 @@ public class StatisticalUnitService {
         return Optional.ofNullable(id).filter(il -> il != 0)
                 .map(il -> this.statisticalUnitRepository.findAllByCameraId(il))
                 .orElse(Collections.emptyList());
+    }
+
+    public Page<StatisticalUnit> getUnitsByCamera(@NotNull Long id, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("date"));
+        return this.statisticalUnitRepository.findAllByCameraId(id, pageable);
     }
 
     public Collection<StatisticalUnit> getUnitsByCamera(@NotNull Camera camera) {

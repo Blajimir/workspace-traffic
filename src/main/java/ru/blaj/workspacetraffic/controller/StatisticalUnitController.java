@@ -22,9 +22,20 @@ public class StatisticalUnitController {
     @Autowired
     private CamImageService camImageService;
 
-    @GetMapping(path = "/{id}")
+    /*@GetMapping(path = "/{id}")
     public Collection<StatisticalUnit> getStaticsByCameraId(@NotNull @PathVariable("id") Long id){
         return statisticalUnitService.getUnitsByCamera(id);
+    }*/
+
+    @GetMapping(path = "/{id}")
+    public Map<String,Object> getStaticsByCameraId(@RequestParam("page") int page, @RequestParam("size") int size,
+                                                            @NotNull @PathVariable("id") Long id){
+        Page<StatisticalUnit> unitsPage = statisticalUnitService.getUnitsByCamera(id, page, size);
+        HashMap<String, Object> mapBody = new HashMap<>();
+        mapBody.put("predictions", unitsPage.stream().collect(Collectors.toList()));
+        mapBody.put("totalPages", unitsPage.getTotalPages());
+        mapBody.put("totalElements", unitsPage.getTotalElements());
+        return mapBody;
     }
 
     @GetMapping(path = "/image/{id}")
