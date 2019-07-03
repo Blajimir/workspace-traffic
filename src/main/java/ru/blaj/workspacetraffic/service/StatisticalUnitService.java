@@ -123,12 +123,14 @@ public class StatisticalUnitService {
                         new AbstractMap.SimpleEntry<>(zone.getId(),
                                 new DetectedObjects().withDetectedList(predictionZones.stream()
                                 .filter(pZone -> imageUtil.getIoU(zone, pZone) > iouTrashold)
-                                .map(pZone -> tagToDetectedObject(pZone.getTag())).collect(Collectors.toList()))))
+                                .map(pZone -> DetectedObject.tagToDetectedObject(pZone.getTag(),tagPattern))
+                                        .collect(Collectors.toList()))))
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
             } else {
                 detectedObjects = Collections.singletonMap(0L,
                         new DetectedObjects().withDetectedList(predictionZones.stream()
-                        .map(pZone -> tagToDetectedObject(pZone.getTag())).collect(Collectors.toList())));
+                        .map(pZone -> DetectedObject.tagToDetectedObject(pZone.getTag(),tagPattern))
+                                .collect(Collectors.toList())));
             }
 
             if (withCamImage) {
@@ -177,31 +179,6 @@ public class StatisticalUnitService {
                             .withTop(destZone.getTop() - pZone.getTop() + unit.getSourceZone().getTop()))
                     .collect(Collectors.toList());
         }).flatMap(Collection::stream).collect(Collectors.toList());
-    }
-
-    /**
-     * вспомогательный метод для серрилизации тэга в объект {@link DetectedObject}
-     *
-     * @param tag - тэг обнаруженного объекта полученного из конетивного сервиса
-     * @return возвращает объект {@link DetectedObject} или null, если тэг не содержит паттерна фильрруютщего тэги
-     */
-    private DetectedObject tagToDetectedObject(String tag) {
-        return Optional.ofNullable(tag).map(String::toLowerCase).filter(t -> t.contains(tagPattern))
-                .map(t -> t.split("_")).map(t -> {
-                    DetectedObject result = new DetectedObject()
-                            .withGender(DetectedGenderEnum.UNKNOWN).withAge(DetectedAgeEnum.UNKNOWN);
-                    if (t.length > 1) {
-                        result.withGender(Arrays.stream(DetectedGenderEnum.values())
-                                .filter(g -> g.getGender().equals(t[1]))
-                                .findFirst().orElse(DetectedGenderEnum.UNKNOWN));
-                    }
-                    if (t.length > 2) {
-                        result.withAge(Arrays.stream(DetectedAgeEnum.values())
-                                .filter(g -> g.getAge().equals(t[2]))
-                                .findFirst().orElse(DetectedAgeEnum.UNKNOWN));
-                    }
-                    return result;
-                }).orElse(null);
     }
 
     private List<Zone> toZones(List<WorkspaceZone> zones) {

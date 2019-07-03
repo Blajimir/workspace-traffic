@@ -65,4 +65,5 @@ public class CamImageRepositoryUnitTest {
         System.out.println("count: "+camImageRepository.count());
     }
 
+
 }

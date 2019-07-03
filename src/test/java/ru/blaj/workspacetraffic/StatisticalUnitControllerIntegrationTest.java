@@ -12,11 +12,13 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import ru.blaj.workspacetraffic.model.Camera;
 import ru.blaj.workspacetraffic.model.StatisticalUnit;
 import ru.blaj.workspacetraffic.service.CameraService;
 import ru.blaj.workspacetraffic.service.StatisticalUnitService;
 
+import java.util.Map;
 import java.util.stream.IntStream;
 
 @RunWith(SpringRunner.class)
@@ -64,6 +66,26 @@ public class StatisticalUnitControllerIntegrationTest {
         HttpEntity<String> entity = new HttpEntity<>(null, headers);
         ResponseEntity<String> response = restTemplate.exchange(
                 UtilTest.getURL("/api/statics/{id}"),
+                HttpMethod.GET,entity,String.class,camera.getId());
+        System.out.println(String.format("%nTest result:%n%s%n", response.getBody()));
+    }
+
+    @Test
+    public void testGetCamImageLogsFromCamera() {
+        String url = "https://image.shutterstock.com/z/stock-photo-group-of-people-602783837.jpg";
+        Camera camera = cameraService.addCamera(UtilTest.buildCamera(url, true));
+        Assert.assertNotNull(camera);
+        IntStream.range(0,2).forEach(value -> unitService.saveUnitFromCamera(camera));
+
+        HttpHeaders headers = new HttpHeaders();
+
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.fromHttpUrl(UtilTest.getURL("/api/statics/image/{id}"));
+        builder.queryParam("page",0)
+                .queryParam("size",2);
+        ResponseEntity<String> response = restTemplate.exchange(
+                builder.toUriString(),
                 HttpMethod.GET,entity,String.class,camera.getId());
         System.out.println(String.format("%nTest result:%n%s%n", response.getBody()));
     }
