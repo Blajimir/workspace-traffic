@@ -169,6 +169,11 @@ public class CamImageService {
         }
     }
 
+    @Transactional
+    public void deleteAllCamImages(){
+        camImageRepository.deleteAll();
+    }
+
     public long getCamImagesCount(){
         return camImageRepository.count();
     }

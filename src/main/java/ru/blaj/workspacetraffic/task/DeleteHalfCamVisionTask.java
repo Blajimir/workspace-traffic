@@ -13,8 +13,8 @@ import ru.blaj.workspacetraffic.service.CamImageService;
 public class DeleteHalfCamVisionTask {
     @Autowired
     CamImageService camImageService;
-    @Scheduled(cron = "0 0 0 */2 * ?")
-    public void deleteHalfCamImagesByShceduler(){
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void deleteHalfCamImagesBySchedule(){
         long before = camImageService.getCamImagesCount();
         camImageService.deleteHalfOfCamImages();
         long after = camImageService.getCamImagesCount();
