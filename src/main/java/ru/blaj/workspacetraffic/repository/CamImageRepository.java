@@ -21,4 +21,7 @@ public interface CamImageRepository extends JpaRepository<CamImage, Long> {
     long getMinId();
     long count();
     void deleteAllByIdLessThanEqual(Long id);
+    void deleteAllByCameraIdAndIdLessThanEqual(Long cameraId, Long id);
+    @Query("select img.id from CamImage as img where img.cameraId = :cid order by img.id desc")
+    List<Long> findByCameraIdListOfTopIdsDesc(@Param("cid") Long cameraId);
 }
