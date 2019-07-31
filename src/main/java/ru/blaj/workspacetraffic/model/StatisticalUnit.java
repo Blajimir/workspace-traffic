@@ -1,5 +1,6 @@
 package ru.blaj.workspacetraffic.model;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -35,9 +36,13 @@ public class StatisticalUnit {
     private Map<Long, DetectedObjects> detectedObjects;
     @Column(name = "use_zone")
     private boolean useZone;
-    private long count;
     @Temporal(TemporalType.TIMESTAMP)
     private Date date;
+
+    @JsonGetter("count")
+    public long getCount(){
+        return this.detectedObjects.values().stream().mapToLong(dObj -> dObj.getDetectedList().size()).sum();
+    }
 
     public StatisticalUnit withId(Long id){
         this.id = id;
@@ -47,11 +52,6 @@ public class StatisticalUnit {
     public StatisticalUnit withCamera(Camera camera){
         this.cameraId = camera.getId();
         this.useZone = camera.isUseZone();
-        return this;
-    }
-
-    public StatisticalUnit withCount(long count){
-        this.count = count;
         return this;
     }
 

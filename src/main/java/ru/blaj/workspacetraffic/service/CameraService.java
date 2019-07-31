@@ -46,6 +46,7 @@ public class CameraService {
         return Collections.unmodifiableCollection(cameraRepository.findAll());
     }
 
+    @Transactional
     public Camera addCamera(@NotNull Camera camera) {
         Camera result = null;
         if (camera.getId() != null) {
@@ -57,7 +58,7 @@ public class CameraService {
                     .forEach(zone -> zone.setCamera(camera)));
             result = this.cameraRepository.save(camera);
         }else{
-            throw new IllegalArgumentException(" Unavailable Url for Camera");
+            throw new IllegalArgumentException(String.format(" Unavailable Url: %s for Camera",camera.getUrl()));
         }
         return result;
     }

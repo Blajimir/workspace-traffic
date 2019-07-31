@@ -15,9 +15,9 @@ public interface CamImageRepository extends JpaRepository<CamImage, Long> {
     @Query("select img from CamImage as img where img.cameraId = :id and img.timestamp >= :start and img.timestamp <= :end")
     Page<CamImage> findAllByCameraId(@Param("id") Long id, @Param("start") Date startDate,
                                      @Param("end") Date endDate, Pageable pageable);
-    @Query("select max(unit.id) from StatisticalUnit unit")
+    @Query("select max(img.id) from CamImage img")
     long getMaxId();
-    @Query("select min(unit.id) from StatisticalUnit unit")
+    @Query("select min(img.id) from CamImage img")
     long getMinId();
     long count();
     void deleteAllByIdLessThanEqual(Long id);

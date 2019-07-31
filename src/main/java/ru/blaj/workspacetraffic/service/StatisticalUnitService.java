@@ -12,6 +12,7 @@ import ru.blaj.workspacetraffic.model.*;
 import ru.blaj.workspacetraffic.repository.StatisticalUnitRepository;
 import ru.blaj.workspacetraffic.util.ImageUtil;
 
+import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -97,6 +98,7 @@ public class StatisticalUnitService {
      * @param camera - объект класса {@link Camera}, объект не должен быть {@literal null}
      * @return возвращает статистичискую единицу с полученными от когнетивного сервиса  данными в виде объекта {@link StatisticalUnit}
      */
+    @Transactional
     public StatisticalUnit saveUnitFromCamera(@NotNull Camera camera) {
         StatisticalUnit result = null;
         BufferedImage bi = cameraService.getImageFromCamera(camera);
@@ -156,7 +158,6 @@ public class StatisticalUnitService {
 
             result = statisticalUnitRepository.save(new StatisticalUnit()
                     .withCamera(camera)
-                    .withCount(detectedObjects.values().stream().flatMap(obj -> obj.getDetectedList().stream()).count())
                     .withDetectedObjects(detectedObjects).withDate(new Date()));
         }
         return result;
