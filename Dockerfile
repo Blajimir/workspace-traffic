@@ -10,4 +10,5 @@ WORKDIR workspace-traffic
 #CMD mvn -DskipTests=true  package
 #CMD java -jar ./target/workspace-traffic-0.0.1-SNAPSHOT.jar
 CMD java -jar ./workspace-traffic-0.0.1-SNAPSHOT.jar
+HEALTHCHECK --interval=5m --timeout=10s CMD curl -f http://localhost:8085/api/health || exit 1
 EXPOSE 8085

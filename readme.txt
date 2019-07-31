@@ -9,4 +9,4 @@ $ docker run --name mytf -d tf-od-rest-api
 
 #Create and run main worspace-traffic app
 $ docker build -t workspace-traffic:v1 -f Dockerfile .
-$ docker run --name wscp-traffic-service --link traffic-postgres:postgres --link mytf:rest-tf-od -p 8085:80 -d workspace-traffic:v1
+$ docker run --name wscp-traffic-service --link traffic-postgres:postgres --link mytf:rest-tf-od -p 80:8085 --restart=on-failure -d workspace-traffic:v1
